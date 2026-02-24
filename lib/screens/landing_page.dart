@@ -21,6 +21,7 @@ import 'package:owa_flutter/widgets/therapies_section_mobile.dart';
 import 'package:owa_flutter/widgets/signup_section.dart';
 import 'package:owa_flutter/widgets/header2.dart';
 import 'package:owa_flutter/widgets/login_section.dart';
+import 'package:owa_flutter/widgets/signup_section_mobile.dart';
 
 class OWALandingPage extends StatefulWidget {
   const OWALandingPage({super.key});
@@ -88,29 +89,29 @@ class _OWALandingPageState extends State<OWALandingPage> {
 
   List<Widget> _buildMobileLayout() {
     return [
-      const HeroSection(),
+      // const HeroSection(),
 
-      InfoSectionMobile(key: UniqueKey()),
+      // InfoSectionMobile(key: UniqueKey()),
 
-      _buildMobileDivider(),
+      //_buildMobileDivider(),
+      OWASignUpSectionMobile(key: UniqueKey()),
+      //OWADiscoverSectionMobile(key: UniqueKey()),
 
-      OWADiscoverSectionMobile(key: UniqueKey()),
+      //_buildMobileDivider(),
 
-      _buildMobileDivider(),
+      //OWATherapiesSectionMobile(key: UniqueKey()),
 
-      OWATherapiesSectionMobile(key: UniqueKey()),
+      //_buildMobileDivider(),
 
-      _buildMobileDivider(),
-
-      OWAEventsSectionMobile(key: UniqueKey()),
+      //OWAEventsSectionMobile(key: UniqueKey()),
 
       /// Mobile Follow Us Section (you may need a mobile version)
-      OWAFollowUsSectionMobile(key: UniqueKey()),
+      //OWAFollowUsSectionMobile(key: UniqueKey()),
 
       ///OWASignUpSection(key: UniqueKey()),
 
       /// Mobile Footer
-      OWAMobileFooter(key: UniqueKey()),
+      //OWAMobileFooter(key: UniqueKey()),
     ];
   }
 
