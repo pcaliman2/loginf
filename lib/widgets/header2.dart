@@ -89,16 +89,7 @@ class _OWAAnimatedNavItem2State extends State<OWAAnimatedNavItem2>
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               style: _isHovered ? _getHoveredTextStyle() : _getTextStyle(),
-              child:
-                  widget.text != 'THERAPIES'
-                      ? Text(widget.text)
-                      : Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: const [
-                          // Nota: el texto se renderiza fuera del const en el Row,
-                          // así que no hacemos const aquí.
-                        ],
-                      ),
+              child: Text(widget.text),
             ),
             const SizedBox(height: 6),
             AnimatedBuilder(
@@ -148,7 +139,9 @@ class OWAHeader extends StatelessWidget {
     return SafeArea(
       child: Container(
         width: double.infinity,
-        color: const Color(0xFFF6EFE7), // Fondo crema igual que signup_section.dart
+        color: const Color(
+          0xFFF6EFE7,
+        ), // Fondo crema igual que signup_section.dart
         padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 25),
         child: Stack(
           children: [
@@ -178,7 +171,7 @@ class OWAHeader extends StatelessWidget {
                   children: [
                     _buildNavItem('SERVICES', NavItemType.circleMono),
                     const SizedBox(width: 40),
-                    _buildNavItem('SCIENCE', NavItemType.circleMono),
+                    _buildNavItem('FAQ', NavItemType.circleMono),
                     const SizedBox(width: 40),
                     _buildNavItem('THERAPIES', NavItemType.circleMono),
                   ],
