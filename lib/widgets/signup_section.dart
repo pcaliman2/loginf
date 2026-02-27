@@ -1,5 +1,3 @@
-// signup_section.dart
-// Barra de navegación superior minimalista
 import 'package:flutter/material.dart';
 import 'package:owa_flutter/useful/size_config.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
@@ -7,162 +5,13 @@ import 'package:owa_flutter/widgets/header2.dart';
 import 'package:owa_flutter/widgets/footer_section.dart';
 import 'package:owa_flutter/widgets/login_section.dart';
 
-// Barra de navegación superior minimalista
-class NavigationHeader extends StatelessWidget {
-  const NavigationHeader({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFF6EFE7), // Fondo crema
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 40),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Menú izquierdo
-          Row(
-            children: [
-              _NavHeaderItem('Become a Member'),
-              const SizedBox(width: 32),
-              _NavHeaderItem('Book a Session'),
-            ],
-          ),
-          // Logo centrado
-          const Text(
-            'O W A°',
-            style: TextStyle(
-              fontFamily: 'Basier Square Mono',
-              fontSize: 40,
-              color: Color(0xFF232323),
-              fontWeight: FontWeight.w400,
-              letterSpacing: 16,
-            ),
-          ),
-          // Menú derecho
-          Row(
-            children: [
-              _NavHeaderItem('Services'),
-              const SizedBox(width: 32),
-              _NavHeaderItem("FAQ's"),
-              const SizedBox(width: 32),
-              _NavHeaderItem('Therapies', underline: true),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NavHeaderItem extends StatelessWidget {
-  final String text;
-  final bool underline;
-  const _NavHeaderItem(this.text, {this.underline = false, Key? key})
-    : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 2),
-      decoration:
-          underline
-              ? const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFF232323), width: 2),
-                ),
-              )
-              : null,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontFamily: 'Basier Square Mono',
-          fontSize: 16,
-          color: Color(0xFF232323),
-          fontWeight: FontWeight.w400,
-        ),
-      ),
-    );
-  }
-}
-
-// Botón interactivo para la imagen de la derecha
-class _SignUpImageButton extends StatefulWidget {
-  final String text;
-  final VoidCallback? onTap;
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color textColor;
-  final Color textHoverColor;
-
-  const _SignUpImageButton({
-    this.text = 'Log In',
-    this.onTap,
-    this.backgroundColor = Colors.transparent,
-    this.borderColor = const Color(0xFF2C2C2C),
-    this.textColor = const Color(0xFF2C2C2C),
-    this.textHoverColor = Colors.white,
-  });
-
-  @override
-  State<_SignUpImageButton> createState() => _SignUpImageButtonState();
-}
-
-class _SignUpImageButtonState extends State<_SignUpImageButton> {
-  bool isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => isHovered = true),
-      onExit: (_) => setState(() => isHovered = false),
-      child: GestureDetector(
-        onTap: () {
-          if (widget.text == 'Log In') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const Scaffold(body: OWALoginSection()),
-              ),
-            );
-          } else if (widget.onTap != null) {
-            widget.onTap!();
-          }
-        },
-        child: Container(
-          width: 220,
-          height: 26,
-          decoration: BoxDecoration(
-            color: isHovered ? const Color(0xFFE6FF00) : widget.backgroundColor,
-            border: Border.all(color: widget.borderColor, width: 1),
-            borderRadius: BorderRadius.circular(2),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            widget.text,
-            style: TextStyle(
-              fontFamily: 'Arbeit',
-              fontWeight: FontWeight.w400,
-              fontSize: 10,
-              color: isHovered ? widget.textHoverColor : widget.textColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class OWASignUpSection extends StatelessWidget {
-  const OWASignUpSection({Key? key}) : super(key: key);
+  const OWASignUpSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Corrección: evita overflow cuando esta sección se monta dentro de un Scaffold
-    // (por ejemplo al navegar). La sección ahora puede crecer y scrollear.
     return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const OWAHeader(),
           Container(
@@ -172,148 +21,7 @@ class OWASignUpSection extends StatelessWidget {
               horizontal: SizeConfig.w(42),
               vertical: SizeConfig.h(40),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Encabezado y línea horizontal
-                Text(
-                  'Sign Up',
-                  style: TextStyle(
-                    fontFamily: 'Basier Square Mono',
-                    fontWeight: FontWeight.w600,
-                    fontSize: SizeConfig.t(19),
-                    color: const Color(0xFF2C2C2C),
-                  ),
-                ),
-                SizedBox(height: SizeConfig.h(12)),
-                Container(
-                  width: double.infinity,
-                  height: SizeConfig.h(1),
-                  color: const Color(0xFF656565),
-                ),
-                SizedBox(height: SizeConfig.h(30)),
-                Center(
-                  child: SizedBox(
-                    width: 1000,
-                    height: 700,
-                    child: Row(
-                      children: [
-                        // Left Side: Sign Up Form
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(32),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 12,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(32),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.only(bottom: 24.0),
-                                  child: Text(
-                                    'Creat Account',
-                                    style: TextStyle(
-                                      fontFamily: 'Times New Roman',
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 32,
-                                      color: Color(0xFF2C2C2C),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: SingleChildScrollView(
-                                    child: _SignUpForm(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 32),
-                        // Right Side: Imagen con overlay, texto y botón
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: colors.backgroundColor,
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(32),
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: Image.asset(
-                                      'assets/discover_4.jpg',
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Positioned.fill(
-                                    child: Container(
-                                      color: Colors.black.withOpacity(0.35),
-                                    ),
-                                  ),
-                                  Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Column(
-                                          children: [
-                                            const Text(
-                                              'GET STARTED',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontFamily:
-                                                    'Basier Square Mono',
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 32,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            const Text(
-                                              'Already have an Account?',
-                                              style: TextStyle(
-                                                fontFamily:
-                                                    'Basier Square Mono',
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 16,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 24),
-                                            _SignUpImageButton(
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              borderColor: Colors.white,
-                                              textColor: Colors.white,
-                                              textHoverColor: const Color(
-                                                0xFF2C2C2C,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: const _SignUpCard(),
           ),
           OWAFooter(key: UniqueKey()),
         ],
@@ -322,7 +30,30 @@ class OWASignUpSection extends StatelessWidget {
   }
 }
 
+class _SignUpCard extends StatelessWidget {
+  const _SignUpCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: colors.backgroundColor,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: const _SignUpForm(),
+        ),
+      ),
+    );
+  }
+}
+
 class _SignUpForm extends StatefulWidget {
+  const _SignUpForm();
+
   @override
   State<_SignUpForm> createState() => _SignUpFormState();
 }
@@ -330,155 +61,239 @@ class _SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<_SignUpForm> {
   final _formKey = GlobalKey<FormState>();
 
-  // Form fields
-  String email = '';
-  String firstName = '';
-  String lastName = '';
-  String password = '';
-  DateTime? dateOfBirth;
-  String gender = '';
-  String nationality = '';
-  String countryOfResidence = '';
-  String telephone = '';
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  final _firstName = TextEditingController();
+  final _lastName = TextEditingController();
+  final _gender = TextEditingController(text: "male");
+  final _birthday = TextEditingController();
+  final _phone = TextEditingController();
+  final _countryOrigin = TextEditingController();
+  final _countryResidence = TextEditingController();
+  final _line1 = TextEditingController();
+  final _line2 = TextEditingController();
+  final _city = TextEditingController();
+  final _state = TextEditingController();
+  final _postal = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
+  // 🔥 DECORATION SOLO BORDE INFERIOR
+  InputDecoration _dec() => const InputDecoration(
+    isDense: true,
+    contentPadding: EdgeInsets.symmetric(vertical: 8),
+    enabledBorder: UnderlineInputBorder(
+      borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+    ),
+    focusedBorder: UnderlineInputBorder(
+      borderSide: BorderSide(color: Color(0xFF2C2C2C), width: 1.5),
+    ),
+  );
+
+  Widget _field(
+    String label,
+    TextEditingController ctrl, {
+    bool obscure = false,
+    int lines = 1,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTextField(
-            'Email',
-            onChanged: (v) => email = v,
-            keyboardType: TextInputType.emailAddress,
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
           ),
-          _buildTextField('First Name', onChanged: (v) => firstName = v),
-          _buildTextField('Last Name', onChanged: (v) => lastName = v),
-          _buildTextField(
-            'Password',
-            onChanged: (v) => password = v,
-            obscureText: true,
-          ),
-          _buildDateField(context),
-          _buildTextField('Gender', onChanged: (v) => gender = v),
-          _buildTextField('Nationality', onChanged: (v) => nationality = v),
-          _buildTextField(
-            'Country of Residence',
-            onChanged: (v) => countryOfResidence = v,
-          ),
-          _buildTextField(
-            'Telephone',
-            onChanged: (v) => telephone = v,
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: _SignUpImageButton(
-              text: 'Sign Inzzz',
-              onTap: () {
-                if (_formKey.currentState?.validate() ?? false) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Sign Up Successful!')),
-                  );
-                }
-              },
-              backgroundColor: Colors.transparent,
-              borderColor: const Color(0xFF2C2C2C),
-              textColor: const Color(0xFF2C2C2C),
-              textHoverColor: Colors.white,
-            ),
+          const SizedBox(height: 4),
+          TextFormField(
+            controller: ctrl,
+            obscureText: obscure,
+            maxLines: lines,
+            decoration: _dec(),
+            validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTextField(
-    String label, {
-    required Function(String) onChanged,
-    bool obscureText = false,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    Icon? icon;
-    switch (label) {
-      case 'Email':
-        icon = const Icon(Icons.email);
-        break;
-      case 'First Name':
-        icon = const Icon(Icons.person);
-        break;
-      case 'Last Name':
-        icon = const Icon(Icons.person_outline);
-        break;
-      case 'Password':
-        icon = const Icon(Icons.lock);
-        break;
-      case 'Gender':
-        icon = const Icon(Icons.transgender);
-        break;
-      case 'Nationality':
-        icon = const Icon(Icons.flag);
-        break;
-      case 'Country of Residence':
-        icon = const Icon(Icons.public);
-        break;
-      case 'Telephone':
-        icon = const Icon(Icons.phone);
-        break;
-      default:
-        icon = null;
-    }
+  String _formatDate(DateTime d) =>
+      "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: TextFormField(
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          prefixIcon: icon,
-        ),
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        onChanged: onChanged,
-        validator:
-            (value) =>
-                (value == null || value.isEmpty) ? 'Please enter $label' : null,
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Create your account",
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          const Text("Fill in your details to access your dashboard."),
+          const SizedBox(height: 14),
+
+          Row(
+            children: [
+              Expanded(child: _field("First name", _firstName)),
+              const SizedBox(width: 12),
+              Expanded(child: _field("Last name", _lastName)),
+            ],
+          ),
+
+          _field("Email", _email),
+          _field("Password", _password, obscure: true),
+
+          Row(
+            children: [
+              Expanded(child: _field("Gender", _gender)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "BIRTHDAY",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      TextFormField(
+                        controller: _birthday,
+                        readOnly: true,
+                        decoration: _dec(),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime(2000),
+                            firstDate: DateTime(1900),
+                            lastDate: DateTime.now(),
+                          );
+                          if (picked != null) {
+                            _birthday.text = _formatDate(picked);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          _field("Phone number", _phone),
+
+          Row(
+            children: [
+              Expanded(child: _field("Country of origin", _countryOrigin)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _field("Country of residence", _countryResidence),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+          const Text("ADDRESS", style: TextStyle(fontWeight: FontWeight.w800)),
+
+          _field("Line 1", _line1),
+          _field("Line 2", _line2),
+
+          Row(
+            children: [
+              Expanded(child: _field("City", _city)),
+              const SizedBox(width: 12),
+              Expanded(child: _field("State", _state)),
+            ],
+          ),
+
+          _field("Postal code", _postal),
+
+          const SizedBox(height: 16),
+
+          Center(
+            child: _LoginImageButton(
+              text: "Sign Inzzz",
+              onTap: () {
+                if (_formKey.currentState?.validate() ?? false) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text("Form Valid")));
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildDateField(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+// Botón reutilizable para imagen
+class _LoginImageButton extends StatefulWidget {
+  final String text;
+  final VoidCallback? onTap;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color textColor;
+  final Color textHoverColor;
+
+  const _LoginImageButton({
+    this.text = 'Sign In',
+    this.onTap,
+    this.backgroundColor = Colors.transparent,
+    this.borderColor = const Color(0xFF2C2C2C),
+    this.textColor = const Color(0xFF2C2C2C),
+    this.textHoverColor = Colors.white,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<_LoginImageButton> createState() => _LoginImageButtonState();
+}
+
+class _LoginImageButtonState extends State<_LoginImageButton> {
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => isHovered = true),
+      onExit: (_) => setState(() => isHovered = false),
       child: GestureDetector(
-        onTap: () async {
-          final picked = await showDatePicker(
-            context: context,
-            initialDate: DateTime(2000),
-            firstDate: DateTime(1900),
-            lastDate: DateTime.now(),
-          );
-          if (picked != null) {
-            setState(() => dateOfBirth = picked);
+        onTap: () {
+          if (widget.text == 'Sign In') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const Scaffold(body: OWASignUpSection()),
+              ),
+            );
+            return;
           }
+          widget.onTap?.call();
         },
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: 'Date of Birth',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(Icons.calendar_today),
+        child: Container(
+          width: 220,
+          height: 36,
+          decoration: BoxDecoration(
+            color: isHovered ? const Color(0xFFE6FF00) : widget.backgroundColor,
+            border: Border.all(color: widget.borderColor, width: 1),
+            borderRadius: BorderRadius.circular(10),
           ),
+          alignment: Alignment.center,
           child: Text(
-            dateOfBirth == null
-                ? 'Select Date'
-                : '${dateOfBirth!.day}/${dateOfBirth!.month}/${dateOfBirth!.year}',
+            widget.text,
             style: TextStyle(
-              fontFamily: 'Basier Square',
+              fontFamily: 'Arbeit',
               fontWeight: FontWeight.w400,
-              color:
-                  dateOfBirth == null ? Colors.grey : const Color(0xFF2C2C2C),
-              fontSize: 16,
+              fontSize: 12,
+              color: isHovered ? widget.textHoverColor : widget.textColor,
             ),
           ),
         ),
