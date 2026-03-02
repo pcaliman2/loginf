@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:country_picker/country_picker.dart';
 import 'package:owa_flutter/useful/size_config.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
 import 'package:owa_flutter/widgets/header2.dart';
 import 'package:owa_flutter/widgets/footer_section.dart';
-import 'package:owa_flutter/widgets/login_section.dart';
 
 class OWASignUpSection extends StatelessWidget {
   const OWASignUpSection({super.key});
@@ -65,7 +65,6 @@ class _SignUpFormState extends State<_SignUpForm> {
   final _password = TextEditingController();
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
-  final _gender = TextEditingController(text: "male");
   final _birthday = TextEditingController();
   final _phone = TextEditingController();
   final _countryOrigin = TextEditingController();
@@ -76,7 +75,8 @@ class _SignUpFormState extends State<_SignUpForm> {
   final _state = TextEditingController();
   final _postal = TextEditingController();
 
-  // 🔥 DECORATION SOLO BORDE INFERIOR
+  String _gender = "Male";
+
   InputDecoration _dec() => const InputDecoration(
     isDense: true,
     contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -93,6 +93,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     TextEditingController ctrl, {
     bool obscure = false,
     int lines = 1,
+    VoidCallback? onTap,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -108,6 +109,8 @@ class _SignUpFormState extends State<_SignUpForm> {
             controller: ctrl,
             obscureText: obscure,
             maxLines: lines,
+            readOnly: onTap != null,
+            onTap: onTap,
             decoration: _dec(),
             validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
           ),
@@ -117,7 +120,19 @@ class _SignUpFormState extends State<_SignUpForm> {
   }
 
   String _formatDate(DateTime d) =>
-      "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+      "${d.year.toString().padLeft(4, '0')}-"
+      "${d.month.toString().padLeft(2, '0')}-"
+      "${d.day.toString().padLeft(2, '0')}";
+
+  void _selectCountry(TextEditingController controller) {
+    showCountryPicker(
+      context: context,
+      showPhoneCode: false,
+      onSelect: (Country country) {
+        controller.text = country.name;
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,8 +162,6 @@ class _SignUpFormState extends State<_SignUpForm> {
 
           Row(
             children: [
-              Expanded(child: _field("Gender", _gender)),
-              const SizedBox(width: 12),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -156,31 +169,53 @@ class _SignUpFormState extends State<_SignUpForm> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "BIRTHDAY",
+                        "GENDER",
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      TextFormField(
-                        controller: _birthday,
-                        readOnly: true,
+                      DropdownButtonFormField<String>(
+                        value: _gender,
                         decoration: _dec(),
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime(2000),
-                            firstDate: DateTime(1900),
-                            lastDate: DateTime.now(),
-                          );
-                          if (picked != null) {
-                            _birthday.text = _formatDate(picked);
-                          }
+                        items: const [
+                          DropdownMenuItem(value: "Male", child: Text("Male")),
+                          DropdownMenuItem(
+                            value: "Female",
+                            child: Text("Female"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Non-Disclosed",
+                            child: Text("Non-Disclosed"),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _gender = value!;
+                          });
                         },
                       ),
                     ],
                   ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _field(
+                  "Birthday",
+                  _birthday,
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime(2000),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      _birthday.text = _formatDate(picked);
+                    }
+                  },
                 ),
               ),
             ],
@@ -190,10 +225,20 @@ class _SignUpFormState extends State<_SignUpForm> {
 
           Row(
             children: [
-              Expanded(child: _field("Country of origin", _countryOrigin)),
+              Expanded(
+                child: _field(
+                  "Country of origin",
+                  _countryOrigin,
+                  onTap: () => _selectCountry(_countryOrigin),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
-                child: _field("Country of residence", _countryResidence),
+                child: _field(
+                  "Country of residence",
+                  _countryResidence,
+                  onTap: () => _selectCountry(_countryResidence),
+                ),
               ),
             ],
           ),
@@ -234,7 +279,6 @@ class _SignUpFormState extends State<_SignUpForm> {
   }
 }
 
-// Botón reutilizable para imagen
 class _LoginImageButton extends StatefulWidget {
   final String text;
   final VoidCallback? onTap;
@@ -266,24 +310,13 @@ class _LoginImageButtonState extends State<_LoginImageButton> {
       onEnter: (_) => setState(() => isHovered = true),
       onExit: (_) => setState(() => isHovered = false),
       child: GestureDetector(
-        onTap: () {
-          if (widget.text == 'Sign In') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const Scaffold(body: OWASignUpSection()),
-              ),
-            );
-            return;
-          }
-          widget.onTap?.call();
-        },
+        onTap: widget.onTap,
         child: Container(
           width: 220,
           height: 36,
           decoration: BoxDecoration(
             color: isHovered ? const Color(0xFFE6FF00) : widget.backgroundColor,
-            border: Border.all(color: widget.borderColor, width: 1),
+            border: Border.all(color: widget.borderColor),
             borderRadius: BorderRadius.circular(10),
           ),
           alignment: Alignment.center,
@@ -291,7 +324,6 @@ class _LoginImageButtonState extends State<_LoginImageButton> {
             widget.text,
             style: TextStyle(
               fontFamily: 'Arbeit',
-              fontWeight: FontWeight.w400,
               fontSize: 12,
               color: isHovered ? widget.textHoverColor : widget.textColor,
             ),
