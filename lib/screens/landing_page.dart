@@ -82,7 +82,7 @@ class _OWALandingPageState extends State<OWALandingPage> {
       //OWAHeader(),
       //OWASignUpSection(key: UniqueKey()),
       //OWALoginSection(key: UniqueKey()),
-      OWALoginSection(key: UniqueKey()),
+      OWASignUpSection(key: UniqueKey()),
 
       ///OWAFooter(key: UniqueKey()),
     ];
