@@ -80,8 +80,9 @@ class _OWALandingPageState extends State<OWALandingPage> {
     return [
       /// Hero Section
       //OWAHeader(),
-      OWASignUpSection(key: UniqueKey()),
+      //OWASignUpSection(key: UniqueKey()),
       //OWALoginSection(key: UniqueKey()),
+      OWALoginSection(key: UniqueKey()),
 
       ///OWAFooter(key: UniqueKey()),
     ];

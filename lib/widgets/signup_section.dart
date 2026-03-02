@@ -4,27 +4,31 @@ import 'package:owa_flutter/useful/size_config.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
 import 'package:owa_flutter/widgets/header2.dart';
 import 'package:owa_flutter/widgets/footer_section.dart';
+import 'package:owa_flutter/widgets/login_section.dart';
 
 class OWASignUpSection extends StatelessWidget {
   const OWASignUpSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const OWAHeader(),
-          Container(
-            width: SizeConfig.w(1440),
-            color: colors.backgroundColor,
-            padding: EdgeInsets.symmetric(
-              horizontal: SizeConfig.w(42),
-              vertical: SizeConfig.h(40),
+    return Material(
+      color: colors.backgroundColor,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const OWAHeader(),
+            Container(
+              width: SizeConfig.w(1440),
+              color: colors.backgroundColor,
+              padding: EdgeInsets.symmetric(
+                horizontal: SizeConfig.w(42),
+                vertical: SizeConfig.h(40),
+              ),
+              child: const _SignUpCard(),
             ),
-            child: const _SignUpCard(),
-          ),
-          OWAFooter(key: UniqueKey()),
-        ],
+            OWAFooter(key: UniqueKey()),
+          ],
+        ),
       ),
     );
   }
@@ -134,6 +138,34 @@ class _SignUpFormState extends State<_SignUpForm> {
     );
   }
 
+  void _goToLogin() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OWALoginSection()),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    _firstName.dispose();
+    _lastName.dispose();
+    _birthday.dispose();
+    _phone.dispose();
+    _countryOrigin.dispose();
+    _countryResidence.dispose();
+    _line1.dispose();
+    _line2.dispose();
+    _city.dispose();
+    _state.dispose();
+    _postal.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -191,9 +223,8 @@ class _SignUpFormState extends State<_SignUpForm> {
                           ),
                         ],
                         onChanged: (value) {
-                          setState(() {
-                            _gender = value!;
-                          });
+                          if (value == null) return;
+                          setState(() => _gender = value);
                         },
                       ),
                     ],
@@ -262,15 +293,47 @@ class _SignUpFormState extends State<_SignUpForm> {
           const SizedBox(height: 16),
 
           Center(
-            child: _LoginImageButton(
-              text: "Sign Inzzz",
-              onTap: () {
-                if (_formKey.currentState?.validate() ?? false) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text("Form Valid")));
-                }
-              },
+            child: Column(
+              children: [
+                _LoginImageButton(
+                  text: "Sign Up",
+                  onTap: () {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Form Valid")),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+                InkWell(
+                  onTap: _goToLogin,
+                  borderRadius: BorderRadius.circular(8),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    child: Text.rich(
+                      TextSpan(
+                        text: "Already a member? ",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF2C2C2C),
+                        ),
+                        children: [
+                          TextSpan(
+                            text: "Log In",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              decoration: TextDecoration.underline,
+                              color: Color(0xFF2C2C2C),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
