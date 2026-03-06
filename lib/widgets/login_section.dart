@@ -40,14 +40,25 @@ class _LoginCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
+        constraints: const BoxConstraints(maxWidth: 1100),
         child: Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
             color: colors.backgroundColor,
             borderRadius: BorderRadius.circular(18),
           ),
-          child: const _LoginForm(),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: 32),
+                  child: _LoginForm(),
+                ),
+              ),
+              Expanded(child: _LoginRightImage()),
+            ],
+          ),
         ),
       ),
     );
@@ -123,65 +134,121 @@ class _LoginFormState extends State<_LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Welcome back",
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          const Text("Sign in to access your dashboard."),
-          const SizedBox(height: 14),
-
-          _field("Email", _email),
-          _field("Password", _password, obscure: true),
-
-          const SizedBox(height: 16),
-
-          Center(
-            child: Column(
-              children: [
-                _LoginImageButton(
-                  text: "Sign In",
-                  onTap: () {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Login form valid")),
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(height: 10),
-
-                InkWell(
-                  onTap: _goToSignUp,
-                  borderRadius: BorderRadius.circular(8),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: Text.rich(
-                      TextSpan(
-                        text: "Not a Member? ",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF2C2C2C),
-                        ),
-                        children: [
-                          TextSpan(
-                            text: "Sign Up",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              decoration: TextDecoration.underline,
-                              color: Color(0xFF2C2C2C),
-                            ),
+    return SizedBox(
+      height: 430,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Welcome back",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            const Text("Log In to access your dashboard."),
+            const SizedBox(height: 14),
+            _field("Email", _email),
+            _field("Password", _password, obscure: true),
+            const SizedBox(height: 16),
+            Center(
+              child: Column(
+                children: [
+                  _LoginImageButton(
+                    text: "Log In",
+                    onTap: () {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Login form valid")),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  InkWell(
+                    onTap: _goToSignUp,
+                    borderRadius: BorderRadius.circular(8),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      child: Text.rich(
+                        TextSpan(
+                          text: "Not a Member? ",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF2C2C2C),
                           ),
-                        ],
+                          children: [
+                            TextSpan(
+                              text: "Sign Up",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                decoration: TextDecoration.underline,
+                                color: Color(0xFF2C2C2C),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginRightImage extends StatelessWidget {
+  const _LoginRightImage();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 430,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('assets/events4.png', fit: BoxFit.cover),
+          ),
+          Positioned.fill(
+            child: Container(color: Colors.black.withOpacity(0.35)),
+          ),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Welcome Back',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Basier Square Mono',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 32,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Not a Member yet?',
+                  style: TextStyle(
+                    fontFamily: 'Basier Square Mono',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _LoginImageButton(
+                  text: 'Sign Up',
+                  backgroundColor: Colors.transparent,
+                  borderColor: Colors.white,
+                  textColor: Colors.white,
+                  textHoverColor: const Color(0xFF2C2C2C),
                 ),
               ],
             ),
@@ -201,14 +268,14 @@ class _LoginImageButton extends StatefulWidget {
   final Color textHoverColor;
 
   const _LoginImageButton({
-    this.text = 'Sign In',
+    this.text = 'Sign Up',
     this.onTap,
     this.backgroundColor = Colors.transparent,
     this.borderColor = const Color(0xFF2C2C2C),
     this.textColor = const Color(0xFF2C2C2C),
     this.textHoverColor = Colors.white,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<_LoginImageButton> createState() => _LoginImageButtonState();
