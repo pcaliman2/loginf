@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:owa_flutter/useful/size_config.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
@@ -112,7 +113,7 @@ class _RightImagePanel extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              _RightPanelButton(text: 'Log In'),
+              _RightPanelButton(text: 'LOG IN'),
             ],
           ),
         ),
@@ -220,34 +221,18 @@ class _SignUpFormState extends State<_SignUpForm> {
   }
 
   Future<void> _selectBirthday() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
+    final initial = DateTime.tryParse(_birthday.text);
+
+    final picked = await showOwaCalendarPicker(
+      context,
+      initial: initial ?? DateTime(2000, 1, 1),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(
-              context,
-            ).colorScheme.copyWith(surface: colors.backgroundColor),
-            datePickerTheme: const DatePickerThemeData(
-              backgroundColor: colors.backgroundColor,
-              surfaceTintColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            ),
-            dialogTheme: const DialogThemeData(
-              backgroundColor: colors.backgroundColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (picked != null) {
       _birthday.text = _formatDate(picked);
+      setState(() {});
     }
   }
 
@@ -288,8 +273,15 @@ class _SignUpFormState extends State<_SignUpForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Create your account",
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              "CREATE YOUR ACCOUNT",
+              style: TextStyle(
+                fontFamily: 'Basier Square Mono',
+                fontWeight: FontWeight.w400,
+                fontSize: 30.4,
+                color: Colors.black,
+                letterSpacing: 0,
+                height: 1.2,
+              ),
             ),
             const SizedBox(height: 6),
             const Text("Fill in your details to access your dashboard."),
@@ -393,7 +385,7 @@ class _SignUpFormState extends State<_SignUpForm> {
               child: Column(
                 children: [
                   _LoginImageButton(
-                    text: "Sign Up",
+                    text: "SIGN UP",
                     onTap: () {
                       if (_formKey.currentState?.validate() ?? false) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -447,16 +439,18 @@ class _LoginImageButton extends StatefulWidget {
   final Color borderColor;
   final Color textColor;
   final Color textHoverColor;
+  final Color hoverBackgroundColor;
 
   const _LoginImageButton({
-    this.text = 'Log In',
+    this.text = 'SIGN UP',
     this.onTap,
     this.backgroundColor = Colors.transparent,
     this.borderColor = const Color(0xFF2C2C2C),
     this.textColor = const Color(0xFF2C2C2C),
-    this.textHoverColor = Colors.white,
-    Key? key,
-  }) : super(key: key);
+    this.textHoverColor = const Color(0xFF2C2C2C),
+    this.hoverBackgroundColor = const Color(0x14000000),
+    super.key,
+  });
 
   @override
   State<_LoginImageButton> createState() => _LoginImageButtonState();
@@ -472,20 +466,26 @@ class _LoginImageButtonState extends State<_LoginImageButton> {
       onExit: (_) => setState(() => isHovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOut,
           width: 220,
-          height: 36,
-          decoration: BoxDecoration(
-            color: isHovered ? const Color(0xFFE6FF00) : widget.backgroundColor,
-            border: Border.all(color: widget.borderColor),
-            borderRadius: BorderRadius.circular(10),
-          ),
+          height: 51,
           alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color:
+                isHovered
+                    ? widget.hoverBackgroundColor
+                    : widget.backgroundColor,
+            border: Border.all(color: widget.borderColor, width: 1),
+            borderRadius: BorderRadius.zero,
+          ),
           child: Text(
             widget.text,
             style: TextStyle(
-              fontFamily: 'Arbeit',
-              fontSize: 12,
+              fontFamily: 'Basier Square Mono',
+              fontSize: 14,
+              letterSpacing: 1.2,
               color: isHovered ? widget.textHoverColor : widget.textColor,
             ),
           ),
@@ -502,16 +502,18 @@ class _RightPanelButton extends StatefulWidget {
   final Color borderColor;
   final Color textColor;
   final Color textHoverColor;
+  final Color hoverBackgroundColor;
 
   const _RightPanelButton({
-    this.text = 'Log In',
+    this.text = 'LOG IN',
     this.onTap,
     this.backgroundColor = Colors.transparent,
     this.borderColor = Colors.white,
     this.textColor = Colors.white,
-    this.textHoverColor = const Color(0xFF2C2C2C),
-    Key? key,
-  }) : super(key: key);
+    this.textHoverColor = Colors.white,
+    this.hoverBackgroundColor = const Color(0x14FFFFFF),
+    super.key,
+  });
 
   @override
   State<_RightPanelButton> createState() => _RightPanelButtonState();
@@ -522,6 +524,7 @@ class _RightPanelButtonState extends State<_RightPanelButton> {
 
   void _goToLogin(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const OWALoginSection()),
@@ -536,27 +539,331 @@ class _RightPanelButtonState extends State<_RightPanelButton> {
       onExit: (_) => setState(() => isHovered = false),
       child: GestureDetector(
         onTap: widget.onTap ?? () => _goToLogin(context),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOut,
           width: 220,
-          height: 36,
+          height: 51,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color:
                 isHovered
-                    ? const Color.fromARGB(255, 66, 66, 65)
+                    ? widget.hoverBackgroundColor
                     : widget.backgroundColor,
-            border: Border.all(color: widget.borderColor),
-            borderRadius: BorderRadius.circular(2),
+            border: Border.all(color: widget.borderColor, width: 1),
+            borderRadius: BorderRadius.zero,
           ),
-          alignment: Alignment.center,
           child: Text(
             widget.text,
             style: TextStyle(
-              fontFamily: 'Arbeit',
-              fontSize: 12,
+              fontFamily: 'Basier Square Mono',
+              fontSize: 14,
+              letterSpacing: 1.2,
               color: isHovered ? widget.textHoverColor : widget.textColor,
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+Future<DateTime?> showOwaCalendarPicker(
+  BuildContext context, {
+  DateTime? initial,
+  required DateTime firstDate,
+  required DateTime lastDate,
+}) async {
+  final now = DateTime.now();
+  final init = initial ?? DateTime(now.year, now.month, now.day);
+
+  return showGeneralDialog<DateTime>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: 'Dismiss',
+    barrierColor: Colors.black.withOpacity(0.4),
+    transitionDuration: const Duration(milliseconds: 300),
+    pageBuilder: (ctx, anim1, anim2) => const SizedBox(),
+    transitionBuilder: (ctx, anim1, anim2, child) {
+      final curve = CurvedAnimation(parent: anim1, curve: Curves.easeOutQuart);
+      return ScaleTransition(
+        scale: Tween<double>(begin: 0.95, end: 1.0).animate(curve),
+        child: FadeTransition(
+          opacity: curve,
+          child: Center(
+            child: Material(
+              color: Colors.transparent,
+              child: _PremiumCalendarDialog(
+                initial: init,
+                firstDate: firstDate,
+                lastDate: lastDate,
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _PremiumCalendarDialog extends StatefulWidget {
+  const _PremiumCalendarDialog({
+    required this.initial,
+    required this.firstDate,
+    required this.lastDate,
+  });
+
+  final DateTime initial;
+  final DateTime firstDate;
+  final DateTime lastDate;
+
+  @override
+  State<_PremiumCalendarDialog> createState() => _PremiumCalendarDialogState();
+}
+
+class _PremiumCalendarDialogState extends State<_PremiumCalendarDialog> {
+  late DateTime _selected;
+
+  static const String fontMono = 'Basier Square Mono';
+  static const String fontBody = 'Arbeit';
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.initial;
+  }
+
+  void _onDateChanged(DateTime date) {
+    HapticFeedback.selectionClick();
+    setState(() => _selected = date);
+  }
+
+  void _close() => Navigator.of(context).pop();
+  void _apply() => Navigator.of(context).pop(_selected);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context).copyWith(
+      colorScheme: const ColorScheme.light(
+        primary: Colors.black,
+        onPrimary: Colors.white,
+        onSurface: Colors.black,
+        surface: Colors.white,
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.black,
+          textStyle: const TextStyle(
+            fontFamily: fontMono,
+            fontSize: 13,
+            letterSpacing: 1.0,
+          ),
+        ),
+      ),
+    );
+
+    return Container(
+      width: 380,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 50,
+            spreadRadius: -10,
+            offset: const Offset(0, 30),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildCustomHeader(),
+          Theme(
+            data: theme.copyWith(
+              datePickerTheme: DatePickerThemeData(
+                backgroundColor: Colors.white,
+                headerBackgroundColor: Colors.white,
+                headerForegroundColor: Colors.black,
+                surfaceTintColor: Colors.transparent,
+                dividerColor: Colors.transparent,
+                dayStyle: const TextStyle(
+                  fontFamily: fontBody,
+                  fontSize: 13,
+                  color: Colors.black,
+                ),
+                weekdayStyle: const TextStyle(
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  letterSpacing: 2.0,
+                  color: Colors.black45,
+                  fontWeight: FontWeight.w400,
+                ),
+                yearStyle: const TextStyle(
+                  fontFamily: fontBody,
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+                headerHeadlineStyle: const TextStyle(fontSize: 14),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+                dayShape: const WidgetStatePropertyAll(CircleBorder()),
+                dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return const Color(0xFF4A4A4A);
+                  }
+                  return null;
+                }),
+                dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return Colors.white;
+                  }
+                  return Colors.black;
+                }),
+              ),
+            ),
+            child: SizedBox(
+              height: 320,
+              child: CalendarDatePicker(
+                initialDate: _selected,
+                firstDate: widget.firstDate,
+                lastDate: widget.lastDate,
+                onDateChanged: _onDateChanged,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 10, 28, 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: _close,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.black38,
+                    splashFactory: NoSplash.splashFactory,
+                  ),
+                  child: const Text('CLOSE'),
+                ),
+                ElevatedButton(
+                  onPressed: _apply,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 20,
+                    ),
+                    textStyle: const TextStyle(
+                      fontFamily: fontMono,
+                      fontSize: 11,
+                      letterSpacing: 2.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  child: const Text('CONFIRM'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomHeader() {
+    final months = [
+      'JANUARY',
+      'FEBRUARY',
+      'MARCH',
+      'APRIL',
+      'MAY',
+      'JUNE',
+      'JULY',
+      'AUGUST',
+      'SEPTEMBER',
+      'OCTOBER',
+      'NOVEMBER',
+      'DECEMBER',
+    ];
+
+    final month = months[_selected.month - 1];
+    final day = _selected.day.toString().padLeft(2, '0');
+    final year = _selected.year;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 40, 32, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(width: 4, height: 4, color: Colors.black),
+              const SizedBox(width: 8),
+              Text(
+                'SELECTED DATE',
+                style: TextStyle(
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  letterSpacing: 3.0,
+                  color: Colors.black.withOpacity(0.5),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                day,
+                style: const TextStyle(
+                  fontFamily: 'Arbeit',
+                  fontSize: 72,
+                  height: 0.8,
+                  fontWeight: FontWeight.w100,
+                  color: Colors.black,
+                  letterSpacing: -2.0,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      month,
+                      style: const TextStyle(
+                        fontFamily: fontMono,
+                        fontSize: 14,
+                        letterSpacing: 2.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$year',
+                      style: TextStyle(
+                        fontFamily: fontMono,
+                        fontSize: 12,
+                        color: Colors.black.withOpacity(0.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

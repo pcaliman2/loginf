@@ -143,8 +143,15 @@ class _LoginFormState extends State<_LoginForm> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              "Welcome back",
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              "WELCOME BACK",
+              style: TextStyle(
+                fontFamily: 'Basier Square Mono',
+                fontWeight: FontWeight.w400,
+                fontSize: 30.4,
+                color: Colors.black,
+                letterSpacing: 0,
+                height: 1.25,
+              ),
             ),
             const SizedBox(height: 6),
             const Text("Log In to access your dashboard."),
@@ -156,7 +163,7 @@ class _LoginFormState extends State<_LoginForm> {
               child: Column(
                 children: [
                   _LoginImageButton(
-                    text: "Log In",
+                    text: "LOG IN",
                     onTap: () {
                       if (_formKey.currentState?.validate() ?? false) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -206,6 +213,15 @@ class _LoginFormState extends State<_LoginForm> {
 class _LoginRightImage extends StatelessWidget {
   const _LoginRightImage();
 
+  void _goToSignUp(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OWASignUpSection()),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -244,11 +260,13 @@ class _LoginRightImage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _LoginImageButton(
-                  text: 'Sign Up',
+                  text: 'SIGN UP',
                   backgroundColor: Colors.transparent,
                   borderColor: Colors.white,
                   textColor: Colors.white,
-                  textHoverColor: const Color(0xFF2C2C2C),
+                  textHoverColor: Colors.white,
+                  hoverBackgroundColor: Color(0x14FFFFFF),
+                  onTap: () => _goToSignUp(context),
                 ),
               ],
             ),
@@ -266,14 +284,16 @@ class _LoginImageButton extends StatefulWidget {
   final Color borderColor;
   final Color textColor;
   final Color textHoverColor;
+  final Color hoverBackgroundColor;
 
   const _LoginImageButton({
-    this.text = 'Sign Up',
+    this.text = 'SIGN UP',
     this.onTap,
     this.backgroundColor = Colors.transparent,
     this.borderColor = const Color(0xFF2C2C2C),
     this.textColor = const Color(0xFF2C2C2C),
-    this.textHoverColor = Colors.white,
+    this.textHoverColor = const Color(0xFF2C2C2C),
+    this.hoverBackgroundColor = const Color(0x14000000),
     super.key,
   });
 
@@ -291,20 +311,26 @@ class _LoginImageButtonState extends State<_LoginImageButton> {
       onExit: (_) => setState(() => isHovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOut,
           width: 220,
-          height: 36,
-          decoration: BoxDecoration(
-            color: isHovered ? const Color(0xFFE6FF00) : widget.backgroundColor,
-            border: Border.all(color: widget.borderColor),
-            borderRadius: BorderRadius.circular(10),
-          ),
+          height: 51,
           alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color:
+                isHovered
+                    ? widget.hoverBackgroundColor
+                    : widget.backgroundColor,
+            border: Border.all(color: widget.borderColor, width: 1),
+            borderRadius: BorderRadius.zero,
+          ),
           child: Text(
             widget.text,
             style: TextStyle(
-              fontFamily: 'Arbeit',
-              fontSize: 12,
+              fontFamily: 'Basier Square Mono',
+              fontSize: 14,
+              letterSpacing: 1.2,
               color: isHovered ? widget.textHoverColor : widget.textColor,
             ),
           ),
