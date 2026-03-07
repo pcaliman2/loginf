@@ -173,33 +173,7 @@ class _LoginFormState extends State<_LoginForm> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  InkWell(
-                    onTap: _goToSignUp,
-                    borderRadius: BorderRadius.circular(8),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                      child: Text.rich(
-                        TextSpan(
-                          text: "Not a Member? ",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF2C2C2C),
-                          ),
-                          children: [
-                            TextSpan(
-                              text: "Sign Up",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                decoration: TextDecoration.underline,
-                                color: Color(0xFF2C2C2C),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Enlace eliminado
                 ],
               ),
             ),
