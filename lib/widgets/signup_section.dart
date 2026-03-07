@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:country_picker/src/country_service.dart';
 import 'package:owa_flutter/useful/size_config.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
 import 'package:owa_flutter/widgets/header2.dart';
@@ -40,11 +42,14 @@ class _SignUpCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double cardHeight = math.max(screenHeight * 0.95, 930);
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 1180),
         child: SizedBox(
-          height: 760,
+          height: cardHeight,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: const [
@@ -65,7 +70,7 @@ class _LeftSignUpPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
       decoration: BoxDecoration(
         color: colors.backgroundColor,
         borderRadius: BorderRadius.circular(18),
@@ -147,6 +152,7 @@ class _SignUpFormState extends State<_SignUpForm> {
   final _postal = TextEditingController();
 
   String _gender = "Male";
+  String _phoneCode = "+1";
 
   InputDecoration _dec() => const InputDecoration(
     isDense: true,
@@ -165,6 +171,8 @@ class _SignUpFormState extends State<_SignUpForm> {
     bool obscure = false,
     int lines = 1,
     VoidCallback? onTap,
+    List<TextInputFormatter>? inputFormatters,
+    Widget? suffixIcon,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -182,8 +190,67 @@ class _SignUpFormState extends State<_SignUpForm> {
             maxLines: lines,
             readOnly: onTap != null,
             onTap: onTap,
-            decoration: _dec(),
-            validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+            inputFormatters: inputFormatters,
+            decoration: _dec().copyWith(suffixIcon: suffixIcon),
+            validator:
+                (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _phoneField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "PHONE NUMBER",
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 118,
+                child: InkWell(
+                  onTap: _selectPhoneCode,
+                  child: InputDecorator(
+                    decoration: _dec().copyWith(
+                      suffixIcon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 18,
+                        color: Color(0xFF2C2C2C),
+                      ),
+                    ),
+                    child: Text(
+                      _phoneCode,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF2C2C2C),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _phone,
+                  decoration: _dec(),
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\s()]')),
+                  ],
+                  validator:
+                      (v) =>
+                          (v == null || v.trim().isEmpty) ? "Required" : null,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -195,29 +262,36 @@ class _SignUpFormState extends State<_SignUpForm> {
       "${d.month.toString().padLeft(2, '0')}-"
       "${d.day.toString().padLeft(2, '0')}";
 
-  void _selectCountry(TextEditingController controller) {
-    showCountryPicker(
-      context: context,
-      showPhoneCode: false,
-      countryListTheme: CountryListThemeData(
-        backgroundColor: colors.backgroundColor,
-        bottomSheetHeight: MediaQuery.of(context).size.height * 0.78,
-        borderRadius: BorderRadius.zero,
-        inputDecoration: const InputDecoration(
-          hintText: 'Search country',
-          prefixIcon: Icon(Icons.search),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFBDBDBD)),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFF2C2C2C), width: 1.5),
-          ),
-        ),
-      ),
-      onSelect: (Country country) {
-        controller.text = country.name;
-      },
+  Future<void> _selectCountry(
+    TextEditingController controller, {
+    bool updatePhoneCode = false,
+  }) async {
+    final selected = await showCenteredCountryPicker(
+      context,
+      title: 'Search country',
     );
+
+    if (selected == null) return;
+
+    controller.text = selected.name;
+    if (updatePhoneCode) {
+      setState(() {
+        _phoneCode = '+${selected.phoneCode}';
+      });
+    }
+  }
+
+  Future<void> _selectPhoneCode() async {
+    final selected = await showCenteredCountryPicker(
+      context,
+      title: 'Search phone code',
+    );
+
+    if (selected == null) return;
+
+    setState(() {
+      _phoneCode = '+${selected.phoneCode}';
+    });
   }
 
   Future<void> _selectBirthday() async {
@@ -268,165 +342,163 @@ class _SignUpFormState extends State<_SignUpForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "CREATE YOUR ACCOUNT",
-              style: TextStyle(
-                fontFamily: 'Basier Square Mono',
-                fontWeight: FontWeight.w400,
-                fontSize: 30.4,
-                color: Colors.black,
-                letterSpacing: 0,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text("Fill in your details to access your dashboard."),
-            const SizedBox(height: 14),
-            Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox(
+            height: constraints.maxHeight,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _field("First name", _firstName)),
-                const SizedBox(width: 12),
-                Expanded(child: _field("Last name", _lastName)),
-              ],
-            ),
-            _field("Email", _email),
-            _field("Password", _password, obscure: true),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "GENDER",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        DropdownButtonFormField<String>(
-                          value: _gender,
-                          dropdownColor: colors.backgroundColor,
-                          borderRadius: BorderRadius.zero,
-                          decoration: _dec(),
-                          items: const [
-                            DropdownMenuItem(
-                              value: "Male",
-                              child: Text("Male"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Female",
-                              child: Text("Female"),
-                            ),
-                            DropdownMenuItem(
-                              value: "Non-Disclosed",
-                              child: Text("Non-Disclosed"),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            if (value == null) return;
-                            setState(() => _gender = value);
-                          },
-                        ),
-                      ],
-                    ),
+                const Text(
+                  "CREATE YOUR ACCOUNT",
+                  style: TextStyle(
+                    fontFamily: 'Basier Square Mono',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 30.4,
+                    color: Colors.black,
+                    letterSpacing: 0,
+                    height: 1.2,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _field("Birthday", _birthday, onTap: _selectBirthday),
+                const SizedBox(height: 6),
+                const Text("Fill in your details to access your dashboard."),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(child: _field("First name", _firstName)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _field("Last name", _lastName)),
+                  ],
                 ),
-              ],
-            ),
-            _field("Phone number", _phone),
-            Row(
-              children: [
-                Expanded(
-                  child: _field(
-                    "Country of origin",
-                    _countryOrigin,
-                    onTap: () => _selectCountry(_countryOrigin),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _field(
-                    "Country of residence",
-                    _countryResidence,
-                    onTap: () => _selectCountry(_countryResidence),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              "ADDRESS",
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-            _field("Line 1", _line1),
-            _field("Line 2", _line2),
-            Row(
-              children: [
-                Expanded(child: _field("City", _city)),
-                const SizedBox(width: 12),
-                Expanded(child: _field("State", _state)),
-              ],
-            ),
-            _field("Postal code", _postal),
-            const SizedBox(height: 16),
-            Center(
-              child: Column(
-                children: [
-                  _LoginImageButton(
-                    text: "SIGN UP",
-                    onTap: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Form Valid")),
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  InkWell(
-                    onTap: _goToLogin,
-                    borderRadius: BorderRadius.circular(8),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                      child: Text.rich(
-                        TextSpan(
-                          text: "Already a member? ",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF2C2C2C),
-                          ),
+                _field("Email", _email),
+                _field("Password", _password, obscure: true),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextSpan(
-                              text: "Log In",
+                            const Text(
+                              "GENDER",
                               style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                decoration: TextDecoration.underline,
-                                color: Color(0xFF2C2C2C),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
                               ),
+                            ),
+                            const SizedBox(height: 4),
+                            DropdownButtonFormField<String>(
+                              value: _gender,
+                              dropdownColor: colors.backgroundColor,
+                              borderRadius: BorderRadius.zero,
+                              decoration: _dec(),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: "Male",
+                                  child: Text("Male"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "Female",
+                                  child: Text("Female"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "Non-Disclosed",
+                                  child: Text("Non-Disclosed"),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value == null) return;
+                                setState(() => _gender = value);
+                              },
                             ),
                           ],
                         ),
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _field(
+                        "Birthday",
+                        _birthday,
+                        onTap: _selectBirthday,
+                      ),
+                    ),
+                  ],
+                ),
+                _phoneField(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _field(
+                        "Country of origin",
+                        _countryOrigin,
+                        onTap: () => _selectCountry(_countryOrigin),
+                        suffixIcon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 18,
+                          color: Color(0xFF2C2C2C),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _field(
+                        "Country of residence",
+                        _countryResidence,
+                        onTap:
+                            () => _selectCountry(
+                              _countryResidence,
+                              updatePhoneCode: true,
+                            ),
+                        suffixIcon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 18,
+                          color: Color(0xFF2C2C2C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "ADDRESS",
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                _field("Line 1", _line1),
+                _field("Line 2", _line2),
+                Row(
+                  children: [
+                    Expanded(child: _field("City", _city)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _field("State", _state)),
+                  ],
+                ),
+                _field("Postal code", _postal),
+                const Spacer(),
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _LoginImageButton(
+                        text: "SIGN UP",
+                        onTap: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Form Valid")),
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      // Enlace eliminado
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -562,6 +634,198 @@ class _RightPanelButtonState extends State<_RightPanelButton> {
               color: isHovered ? widget.textHoverColor : widget.textColor,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<Country?> showCenteredCountryPicker(
+  BuildContext context, {
+  String title = 'Search country',
+}) {
+  return showGeneralDialog<Country>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: 'Dismiss',
+    barrierColor: Colors.black.withOpacity(0.28),
+    transitionDuration: const Duration(milliseconds: 220),
+    pageBuilder: (_, __, ___) => const SizedBox(),
+    transitionBuilder: (_, animation, __, ___) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+
+      return FadeTransition(
+        opacity: curved,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.98, end: 1).animate(curved),
+          child: Center(child: _CenteredCountryPickerDialog(title: title)),
+        ),
+      );
+    },
+  );
+}
+
+class _CenteredCountryPickerDialog extends StatefulWidget {
+  final String title;
+
+  const _CenteredCountryPickerDialog({required this.title});
+
+  @override
+  State<_CenteredCountryPickerDialog> createState() =>
+      _CenteredCountryPickerDialogState();
+}
+
+class _CenteredCountryPickerDialogState
+    extends State<_CenteredCountryPickerDialog> {
+  final TextEditingController _searchController = TextEditingController();
+
+  late final List<Country> _allCountries;
+  List<Country> _filteredCountries = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _allCountries = CountryService().getAll();
+    _filteredCountries = List<Country>.from(_allCountries);
+    _searchController.addListener(_applyFilter);
+  }
+
+  void _applyFilter() {
+    final query = _searchController.text.trim().toLowerCase();
+
+    setState(() {
+      if (query.isEmpty) {
+        _filteredCountries = List<Country>.from(_allCountries);
+        return;
+      }
+
+      _filteredCountries =
+          _allCountries.where((country) {
+            final name = country.name.toLowerCase();
+            final code = country.countryCode.toLowerCase();
+            final phone = country.phoneCode.toLowerCase();
+            return name.contains(query) ||
+                code.contains(query) ||
+                phone.contains(query);
+          }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController
+      ..removeListener(_applyFilter)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final dialogHeight = screenHeight * 0.50;
+    final dialogWidth =
+        screenWidth > 1200
+            ? 640.0
+            : screenWidth > 900
+            ? screenWidth * 0.56
+            : screenWidth * 0.88;
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        width: dialogWidth,
+        height: dialogHeight,
+        decoration: BoxDecoration(
+          color: colors.backgroundColor,
+          border: Border.all(color: const Color(0xFF2C2C2C), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: widget.title,
+                  prefixIcon: const Icon(Icons.search),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFF2C2C2C),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Scrollbar(
+                thumbVisibility: true,
+                child: ListView.separated(
+                  padding: const EdgeInsets.only(top: 4, bottom: 8),
+                  itemCount: _filteredCountries.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 0),
+                  itemBuilder: (context, index) {
+                    final country = _filteredCountries[index];
+
+                    return InkWell(
+                      onTap: () => Navigator.of(context).pop(country),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              country.flagEmoji,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            SizedBox(
+                              width: 64,
+                              child: Text(
+                                '+${country.phoneCode}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF2C2C2C),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                country.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF2C2C2C),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
