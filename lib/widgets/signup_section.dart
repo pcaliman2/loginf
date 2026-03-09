@@ -70,7 +70,7 @@ class _LeftSignUpPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+      padding: const EdgeInsets.fromLTRB(28, 22, 28, 28),
       decoration: BoxDecoration(
         color: colors.backgroundColor,
         borderRadius: BorderRadius.circular(18),
@@ -176,7 +176,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     Widget? suffixIcon,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -215,7 +215,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -333,16 +333,6 @@ class _SignUpFormState extends State<_SignUpForm> {
     }
   }
 
-  void _goToLogin() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const OWALoginSection()),
-      );
-    });
-  }
-
   @override
   void dispose() {
     _email.dispose();
@@ -373,19 +363,27 @@ class _SignUpFormState extends State<_SignUpForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "CREATE YOUR ACCOUNT",
-                  style: TextStyle(
-                    fontFamily: 'Basier Square Mono',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 30.4,
-                    color: Colors.black,
-                    letterSpacing: 0,
-                    height: 1.2,
+                Transform.translate(
+                  offset: const Offset(0, -32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        "CREATE YOUR ACCOUNT",
+                        style: TextStyle(
+                          fontFamily: 'Basier Square Mono',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 30.4,
+                          color: Colors.black,
+                          letterSpacing: 0,
+                          height: 1.2,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text("Fill in your details to access your dashboard."),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text("Fill in your details to access your dashboard."),
                 const SizedBox(height: 14),
                 Row(
                   children: [
@@ -400,7 +398,7 @@ class _SignUpFormState extends State<_SignUpForm> {
                   children: [
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -684,7 +682,9 @@ Future<Country?> showCenteredCountryPicker(
         opacity: curved,
         child: ScaleTransition(
           scale: Tween<double>(begin: 0.98, end: 1).animate(curved),
-          child: Center(child: _CenteredCountryPickerDialog(title: title)),
+          child: Center(
+            child: _CenteredCountryPickerDialog(title: title),
+          ),
         ),
       );
     },
@@ -750,7 +750,12 @@ class _CenteredCountryPickerDialogState
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final dialogHeight = screenHeight * 0.50;
+    final originalHeight = screenHeight * 0.50;
+    final extraTop = originalHeight * 0.20;
+    final extraBottom = originalHeight * 0.15;
+    final dialogHeight = originalHeight + extraTop + extraBottom;
+    final verticalShift = -(extraTop - extraBottom) / 2;
+
     final dialogWidth =
         screenWidth > 1200
             ? 640.0
@@ -760,89 +765,92 @@ class _CenteredCountryPickerDialogState
 
     return Material(
       color: Colors.transparent,
-      child: Container(
-        width: dialogWidth,
-        height: dialogHeight,
-        decoration: BoxDecoration(
-          color: colors.backgroundColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-              child: TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: widget.title,
-                  prefixIcon: const Icon(Icons.search),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFBDBDBD)),
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFF2C2C2C),
-                      width: 1.5,
+      child: Transform.translate(
+        offset: Offset(0, verticalShift),
+        child: Container(
+          width: dialogWidth,
+          height: dialogHeight,
+          decoration: BoxDecoration(
+            color: colors.backgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                child: TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: widget.title,
+                    prefixIcon: const Icon(Icons.search),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xFF2C2C2C),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: Scrollbar(
-                thumbVisibility: true,
-                child: ListView.separated(
-                  padding: const EdgeInsets.only(top: 4, bottom: 8),
-                  itemCount: _filteredCountries.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 0),
-                  itemBuilder: (context, index) {
-                    final country = _filteredCountries[index];
+              const SizedBox(height: 8),
+              Expanded(
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.only(top: 4, bottom: 8),
+                    itemCount: _filteredCountries.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 0),
+                    itemBuilder: (context, index) {
+                      final country = _filteredCountries[index];
 
-                    return InkWell(
-                      onTap: () => Navigator.of(context).pop(country),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 64,
-                              child: Text(
-                                '+${country.phoneCode}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF2C2C2C),
+                      return InkWell(
+                        onTap: () => Navigator.of(context).pop(country),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                                child: Text(
+                                  '+${country.phoneCode}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF2C2C2C),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                country.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF2C2C2C),
+                              Expanded(
+                                child: Text(
+                                  country.name,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF2C2C2C),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
