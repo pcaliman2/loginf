@@ -143,6 +143,7 @@ class _SignUpFormState extends State<_SignUpForm> {
   final _lastName = TextEditingController();
   final _birthday = TextEditingController();
   final _phone = TextEditingController();
+  final _phoneCodeController = TextEditingController(text: '+1');
   final _countryOrigin = TextEditingController();
   final _countryResidence = TextEditingController();
   final _line1 = TextEditingController();
@@ -156,7 +157,7 @@ class _SignUpFormState extends State<_SignUpForm> {
 
   InputDecoration _dec() => const InputDecoration(
     isDense: true,
-    contentPadding: EdgeInsets.symmetric(vertical: 8),
+    contentPadding: EdgeInsets.only(bottom: 8),
     enabledBorder: UnderlineInputBorder(
       borderSide: BorderSide(color: Color(0xFFBDBDBD)),
     ),
@@ -191,6 +192,7 @@ class _SignUpFormState extends State<_SignUpForm> {
             readOnly: onTap != null,
             onTap: onTap,
             inputFormatters: inputFormatters,
+            textAlignVertical: TextAlignVertical.bottom,
             decoration: _dec().copyWith(suffixIcon: suffixIcon),
             validator:
                 (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
@@ -201,6 +203,17 @@ class _SignUpFormState extends State<_SignUpForm> {
   }
 
   Widget _phoneField() {
+    const inputTextStyle = TextStyle(
+      fontSize: 14,
+      color: Color(0xFF2C2C2C),
+      height: 1.2,
+    );
+
+    final baseDecoration = _dec().copyWith(
+      isDense: true,
+      contentPadding: const EdgeInsets.only(bottom: 8),
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
@@ -212,36 +225,43 @@ class _SignUpFormState extends State<_SignUpForm> {
           ),
           const SizedBox(height: 4),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizedBox(
-                width: 118,
-                child: InkWell(
+                width: 108,
+                child: TextFormField(
+                  controller: _phoneCodeController,
+                  readOnly: true,
                   onTap: _selectPhoneCode,
-                  child: InputDecorator(
-                    decoration: _dec().copyWith(
-                      suffixIcon: const Icon(
+                  style: inputTextStyle,
+                  textAlignVertical: TextAlignVertical.center,
+                  decoration: baseDecoration.copyWith(
+                    suffixIcon: const Padding(
+                      padding: EdgeInsets.only(left: 6, bottom: 1),
+                      child: Icon(
                         Icons.keyboard_arrow_down,
                         size: 18,
                         color: Color(0xFF2C2C2C),
                       ),
                     ),
-                    child: Text(
-                      _phoneCode,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF2C2C2C),
-                      ),
+                    suffixIconConstraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
                     ),
                   ),
+                  validator:
+                      (v) =>
+                          (v == null || v.trim().isEmpty) ? "Required" : null,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: TextFormField(
                   controller: _phone,
-                  decoration: _dec(),
+                  style: inputTextStyle,
                   keyboardType: TextInputType.phone,
+                  textAlignVertical: TextAlignVertical.center,
+                  decoration: baseDecoration,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\s()]')),
                   ],
@@ -274,9 +294,11 @@ class _SignUpFormState extends State<_SignUpForm> {
     if (selected == null) return;
 
     controller.text = selected.name;
+
     if (updatePhoneCode) {
       setState(() {
         _phoneCode = '+${selected.phoneCode}';
+        _phoneCodeController.text = _phoneCode;
       });
     }
   }
@@ -291,6 +313,7 @@ class _SignUpFormState extends State<_SignUpForm> {
 
     setState(() {
       _phoneCode = '+${selected.phoneCode}';
+      _phoneCodeController.text = _phoneCode;
     });
   }
 
@@ -328,6 +351,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     _lastName.dispose();
     _birthday.dispose();
     _phone.dispose();
+    _phoneCodeController.dispose();
     _countryOrigin.dispose();
     _countryResidence.dispose();
     _line1.dispose();
@@ -491,7 +515,6 @@ class _SignUpFormState extends State<_SignUpForm> {
                         },
                       ),
                       const SizedBox(height: 10),
-                      // Enlace eliminado
                     ],
                   ),
                 ),
@@ -742,7 +765,6 @@ class _CenteredCountryPickerDialogState
         height: dialogHeight,
         decoration: BoxDecoration(
           color: colors.backgroundColor,
-          border: Border.all(color: const Color(0xFF2C2C2C), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.12),
@@ -793,11 +815,6 @@ class _CenteredCountryPickerDialogState
                         ),
                         child: Row(
                           children: [
-                            Text(
-                              country.flagEmoji,
-                              style: const TextStyle(fontSize: 24),
-                            ),
-                            const SizedBox(width: 14),
                             SizedBox(
                               width: 64,
                               child: Text(
