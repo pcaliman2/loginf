@@ -52,7 +52,7 @@ class _OWALandingPageState extends State<OWALandingPage> {
           ),
 
           // Hamburger menu button for mobile
-          if (!isDesktop) _buildHamburgerMenu(),
+          //if (!isDesktop) _buildHamburgerMenu(),
         ],
       ),
     );

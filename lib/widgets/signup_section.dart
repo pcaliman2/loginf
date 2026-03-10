@@ -8,12 +8,18 @@ import 'package:owa_flutter/useful/colors.dart' as colors;
 import 'package:owa_flutter/widgets/header2.dart';
 import 'package:owa_flutter/widgets/footer_section.dart';
 import 'package:owa_flutter/widgets/login_section.dart';
+import 'package:owa_flutter/widgets/signup_section_mobile.dart';
+import 'package:owa_flutter/useful/is_desktop_from_context.dart';
 
 class OWASignUpSection extends StatelessWidget {
   const OWASignUpSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (!isDesktopFromContext(context)) {
+      return const OWASignUpSectionMobile();
+    }
+
     return Material(
       color: colors.backgroundColor,
       child: SingleChildScrollView(
@@ -682,9 +688,7 @@ Future<Country?> showCenteredCountryPicker(
         opacity: curved,
         child: ScaleTransition(
           scale: Tween<double>(begin: 0.98, end: 1).animate(curved),
-          child: Center(
-            child: _CenteredCountryPickerDialog(title: title),
-          ),
+          child: Center(child: _CenteredCountryPickerDialog(title: title)),
         ),
       );
     },

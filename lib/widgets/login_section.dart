@@ -4,12 +4,18 @@ import 'package:owa_flutter/useful/colors.dart' as colors;
 import 'package:owa_flutter/widgets/header2.dart';
 import 'package:owa_flutter/widgets/footer_section.dart';
 import 'package:owa_flutter/widgets/signup_section.dart';
+import 'package:owa_flutter/widgets/login_section_mobile.dart';
+import 'package:owa_flutter/useful/is_desktop_from_context.dart';
 
 class OWALoginSection extends StatelessWidget {
   const OWALoginSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (!isDesktopFromContext(context)) {
+      return const OWALoginSectionMobile();
+    }
+
     return Material(
       color: colors.backgroundColor,
       child: SingleChildScrollView(
@@ -173,7 +179,6 @@ class _LoginFormState extends State<_LoginForm> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  // Enlace eliminado
                 ],
               ),
             ),
