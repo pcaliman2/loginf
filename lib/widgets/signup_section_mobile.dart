@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:country_picker/src/country_service.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
-import 'package:owa_flutter/widgets/header2.dart';
-import 'package:owa_flutter/widgets/footer_section.dart';
+import 'package:owa_flutter/widgets/header2_mobile.dart';
+import 'package:owa_flutter/widgets/mobile_footer.dart';
 import 'package:owa_flutter/widgets/login_section.dart';
 
 class OWASignUpSectionMobile extends StatelessWidget {
@@ -17,12 +17,12 @@ class OWASignUpSectionMobile extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            const OWAHeader(),
+            OWAHeader2Mobile(),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: _MobileSignUpCard(),
             ),
-            OWAFooter(key: UniqueKey()),
+            OWAMobileFooter(key: UniqueKey()),
           ],
         ),
       ),
