@@ -4,6 +4,8 @@ import 'package:owa_flutter/crud/privacy_notice_screen.dart';
 
 enum Header2MobileNavItemType { squareMono, circleMono }
 
+////Le voy a poner header2_mobile para se consecuente con el otro widget
+///sobre todo con el sufijo "2"
 class OWAHeader2Mobile extends StatelessWidget {
   const OWAHeader2Mobile({super.key});
 

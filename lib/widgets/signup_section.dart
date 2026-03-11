@@ -25,7 +25,7 @@ class OWASignUpSection extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            const OWAHeader(),
+            const OWAHeader2(),
             Container(
               width: SizeConfig.w(1440),
               color: colors.backgroundColor,
@@ -140,6 +140,7 @@ class _SignUpForm extends StatefulWidget {
   State<_SignUpForm> createState() => _SignUpFormState();
 }
 
+//Aqui defino las variable
 class _SignUpFormState extends State<_SignUpForm> {
   final _formKey = GlobalKey<FormState>();
 
@@ -667,6 +668,7 @@ class _RightPanelButtonState extends State<_RightPanelButton> {
   }
 }
 
+////Aqui estan los ajustes al Country Picker y al Calendar Picker, para que se vean centrados y con un diseño mas personalizado acorde a la pagina
 Future<Country?> showCenteredCountryPicker(
   BuildContext context, {
   String title = 'Search country',

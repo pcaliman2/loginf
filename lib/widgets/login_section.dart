@@ -21,7 +21,7 @@ class OWALoginSection extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            const OWAHeader(),
+            const OWAHeader2(),
             Container(
               width: SizeConfig.w(1440),
               color: colors.backgroundColor,

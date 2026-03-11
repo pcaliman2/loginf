@@ -4,10 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:owa_flutter/widgets/owa_animated_nav_item.dart'; // Se usa para NavItemType
 import 'package:owa_flutter/crud/privacy_notice_screen.dart';
 
-// Enum local para tipos de navegación (independencia dentro de este archivo)
 enum NavItemType2 { squareMono, circleMono }
 
-/// Versión local de OWAAnimatedNavItem para header2.dart
+/// Esta es mi version del Header hasta que randy termine la definitiva
 class OWAAnimatedNavItem2 extends StatefulWidget {
   final String text;
   final NavItemType2 type;
@@ -62,11 +61,11 @@ class _OWAAnimatedNavItem2State extends State<OWAAnimatedNavItem2>
   TextStyle _getTextStyle() {
     return const TextStyle(
       fontFamily: 'Instrument Sans',
-      color: Colors.black, // Siempre negro
+      color: Colors.black,
       fontSize: 11, // 11px
       fontWeight: FontWeight.w400,
       height: 1.5, // 150%
-      letterSpacing: 0.0, // 0%
+      letterSpacing: 0.0,
     );
   }
 
@@ -127,15 +126,14 @@ class _OWAAnimatedNavItem2State extends State<OWAAnimatedNavItem2>
   }
 }
 
-/// Constant header widget for reuse
-class OWAHeader extends StatelessWidget {
-  const OWAHeader({Key? key}) : super(key: key);
+/// Aqui creo la clase del Headder y la voy a llamar header2
+/// Porque no se si hay otra y nombre tenga conflicto
+/// por eso puse el 2
+class OWAHeader2 extends StatelessWidget {
+  const OWAHeader2({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Corrección crítica:
-    // OWAHeader ya NO retorna Positioned. Ahora es "drop-in" y puede vivir dentro
-    // de Column / Row / ListView / Scaffold, etc.
     return SafeArea(
       child: Container(
         width: double.infinity,
