@@ -20,6 +20,8 @@ import 'package:owa_flutter/widgets/therapies_section.dart';
 import 'package:owa_flutter/widgets/therapies_section_mobile.dart';
 import 'package:owa_flutter/widgets/signup_section.dart';
 import 'package:owa_flutter/widgets/header2.dart';
+import 'package:owa_flutter/widgets/edit_profile.dart';
+import 'package:owa_flutter/widgets/edit_profile_mobile.dart';
 import 'package:owa_flutter/widgets/login_section.dart';
 import 'package:owa_flutter/widgets/signup_section_mobile.dart';
 
@@ -83,6 +85,7 @@ class _OWALandingPageState extends State<OWALandingPage> {
       //OWASignUpSection(key: UniqueKey()),
       //OWALoginSection(key: UniqueKey()),
       OWASignUpSection(key: UniqueKey()),
+      //OWAEditProfile(key: UniqueKey()),
 
       ///OWAFooter(key: UniqueKey()),
     ];
@@ -96,6 +99,7 @@ class _OWALandingPageState extends State<OWALandingPage> {
 
       //_buildMobileDivider(),
       OWASignUpSectionMobile(key: UniqueKey()),
+      //OWAEditProfileMobile(key: UniqueKey()),
       //OWADiscoverSectionMobile(key: UniqueKey()),
 
       //_buildMobileDivider(),
