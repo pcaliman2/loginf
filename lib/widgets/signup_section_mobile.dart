@@ -38,9 +38,9 @@ class _MobileSignUpCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: colors.backgroundColor,
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: const [
+        children: [
           _MobileImagePanel(),
           SizedBox(height: 28),
           _MobileLeftSignUpPanel(),
@@ -279,6 +279,7 @@ class _MobileSignUpFormState extends State<_MobileSignUpForm> {
     final selected = await showCenteredCountryPicker(
       context,
       title: 'Search country',
+      showPhoneCode: false,
     );
 
     if (selected == null) return;
@@ -297,6 +298,7 @@ class _MobileSignUpFormState extends State<_MobileSignUpForm> {
     final selected = await showCenteredCountryPicker(
       context,
       title: 'Search phone code',
+      showPhoneCode: true,
     );
 
     if (selected == null) return;
@@ -365,12 +367,10 @@ class _MobileSignUpFormState extends State<_MobileSignUpForm> {
             style: TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 18),
-
           _field("First name", _firstName),
           _field("Last name", _lastName),
           _field("Email", _email),
           _field("Password", _password, obscure: true),
-
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Column(
@@ -402,11 +402,8 @@ class _MobileSignUpFormState extends State<_MobileSignUpForm> {
               ],
             ),
           ),
-
           _field("Birthday", _birthday, onTap: _selectBirthday),
-
           _phoneField(),
-
           _field(
             "Country of origin",
             _countryOrigin,
@@ -417,7 +414,6 @@ class _MobileSignUpFormState extends State<_MobileSignUpForm> {
               color: Color(0xFF2C2C2C),
             ),
           ),
-
           _field(
             "Country of residence",
             _countryResidence,
@@ -429,18 +425,14 @@ class _MobileSignUpFormState extends State<_MobileSignUpForm> {
               color: Color(0xFF2C2C2C),
             ),
           ),
-
           const SizedBox(height: 14),
           const Text("ADDRESS", style: TextStyle(fontWeight: FontWeight.w800)),
-
           _field("Line 1", _line1),
           _field("Line 2", _line2),
           _field("City", _city),
           _field("State", _state),
           _field("Postal code", _postal),
-
           const SizedBox(height: 24),
-
           Center(
             child: _MobileSignUpButton(
               text: "SIGN UP",
@@ -453,9 +445,7 @@ class _MobileSignUpFormState extends State<_MobileSignUpForm> {
               },
             ),
           ),
-
           const SizedBox(height: 14),
-
           Center(
             child: GestureDetector(
               onTap: () {
@@ -585,6 +575,7 @@ class _MobileRightPanelButtonState extends State<_MobileRightPanelButton> {
 Future<Country?> showCenteredCountryPicker(
   BuildContext context, {
   String title = 'Search country',
+  bool showPhoneCode = false,
 }) {
   return showGeneralDialog<Country>(
     context: context,
@@ -603,7 +594,12 @@ Future<Country?> showCenteredCountryPicker(
         opacity: curved,
         child: ScaleTransition(
           scale: Tween<double>(begin: 0.98, end: 1).animate(curved),
-          child: Center(child: _CenteredCountryPickerDialog(title: title)),
+          child: Center(
+            child: _CenteredCountryPickerDialog(
+              title: title,
+              showPhoneCode: showPhoneCode,
+            ),
+          ),
         ),
       );
     },
@@ -612,8 +608,12 @@ Future<Country?> showCenteredCountryPicker(
 
 class _CenteredCountryPickerDialog extends StatefulWidget {
   final String title;
+  final bool showPhoneCode;
 
-  const _CenteredCountryPickerDialog({required this.title});
+  const _CenteredCountryPickerDialog({
+    required this.title,
+    this.showPhoneCode = false,
+  });
 
   @override
   State<_CenteredCountryPickerDialog> createState() =>
@@ -726,29 +726,38 @@ class _CenteredCountryPickerDialogState
                           horizontal: 20,
                           vertical: 14,
                         ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 64,
-                              child: Text(
-                                '+${country.phoneCode}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF2C2C2C),
+                        child:
+                            widget.showPhoneCode
+                                ? Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 64,
+                                      child: Text(
+                                        '+${country.phoneCode}',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Color(0xFF2C2C2C),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        country.name,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Color(0xFF2C2C2C),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                                : Text(
+                                  country.name,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF2C2C2C),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                country.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF2C2C2C),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     );
                   },

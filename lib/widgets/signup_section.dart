@@ -140,7 +140,6 @@ class _SignUpForm extends StatefulWidget {
   State<_SignUpForm> createState() => _SignUpFormState();
 }
 
-//Aqui defino las variable
 class _SignUpFormState extends State<_SignUpForm> {
   final _formKey = GlobalKey<FormState>();
 
@@ -163,15 +162,15 @@ class _SignUpFormState extends State<_SignUpForm> {
   String _phoneCode = "+1";
 
   InputDecoration _dec() => const InputDecoration(
-    isDense: true,
-    contentPadding: EdgeInsets.only(bottom: 8),
-    enabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: Color(0xFFBDBDBD)),
-    ),
-    focusedBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: Color(0xFF2C2C2C), width: 1.5),
-    ),
-  );
+        isDense: true,
+        contentPadding: EdgeInsets.only(bottom: 8),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFF2C2C2C), width: 1.5),
+        ),
+      );
 
   Widget _field(
     String label,
@@ -257,8 +256,7 @@ class _SignUpFormState extends State<_SignUpForm> {
                     ),
                   ),
                   validator:
-                      (v) =>
-                          (v == null || v.trim().isEmpty) ? "Required" : null,
+                      (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
                 ),
               ),
               const SizedBox(width: 12),
@@ -273,8 +271,7 @@ class _SignUpFormState extends State<_SignUpForm> {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\s()]')),
                   ],
                   validator:
-                      (v) =>
-                          (v == null || v.trim().isEmpty) ? "Required" : null,
+                      (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
                 ),
               ),
             ],
@@ -296,6 +293,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     final selected = await showCenteredCountryPicker(
       context,
       title: 'Search country',
+      showPhoneCode: false,
     );
 
     if (selected == null) return;
@@ -314,6 +312,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     final selected = await showCenteredCountryPicker(
       context,
       title: 'Search phone code',
+      showPhoneCode: true,
     );
 
     if (selected == null) return;
@@ -475,11 +474,10 @@ class _SignUpFormState extends State<_SignUpForm> {
                       child: _field(
                         "Country of residence",
                         _countryResidence,
-                        onTap:
-                            () => _selectCountry(
-                              _countryResidence,
-                              updatePhoneCode: true,
-                            ),
+                        onTap: () => _selectCountry(
+                          _countryResidence,
+                          updatePhoneCode: true,
+                        ),
                         suffixIcon: const Icon(
                           Icons.keyboard_arrow_down,
                           size: 18,
@@ -573,10 +571,9 @@ class _LoginImageButtonState extends State<_LoginImageButton> {
           height: 51,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color:
-                isHovered
-                    ? widget.hoverBackgroundColor
-                    : widget.backgroundColor,
+            color: isHovered
+                ? widget.hoverBackgroundColor
+                : widget.backgroundColor,
             border: Border.all(color: widget.borderColor, width: 1),
             borderRadius: BorderRadius.zero,
           ),
@@ -646,10 +643,9 @@ class _RightPanelButtonState extends State<_RightPanelButton> {
           height: 51,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color:
-                isHovered
-                    ? widget.hoverBackgroundColor
-                    : widget.backgroundColor,
+            color: isHovered
+                ? widget.hoverBackgroundColor
+                : widget.backgroundColor,
             border: Border.all(color: widget.borderColor, width: 1),
             borderRadius: BorderRadius.zero,
           ),
@@ -668,10 +664,10 @@ class _RightPanelButtonState extends State<_RightPanelButton> {
   }
 }
 
-////Aqui estan los ajustes al Country Picker y al Calendar Picker, para que se vean centrados y con un diseño mas personalizado acorde a la pagina
 Future<Country?> showCenteredCountryPicker(
   BuildContext context, {
   String title = 'Search country',
+  bool showPhoneCode = true,
 }) {
   return showGeneralDialog<Country>(
     context: context,
@@ -690,7 +686,12 @@ Future<Country?> showCenteredCountryPicker(
         opacity: curved,
         child: ScaleTransition(
           scale: Tween<double>(begin: 0.98, end: 1).animate(curved),
-          child: Center(child: _CenteredCountryPickerDialog(title: title)),
+          child: Center(
+            child: _CenteredCountryPickerDialog(
+              title: title,
+              showPhoneCode: showPhoneCode,
+            ),
+          ),
         ),
       );
     },
@@ -699,8 +700,12 @@ Future<Country?> showCenteredCountryPicker(
 
 class _CenteredCountryPickerDialog extends StatefulWidget {
   final String title;
+  final bool showPhoneCode;
 
-  const _CenteredCountryPickerDialog({required this.title});
+  const _CenteredCountryPickerDialog({
+    required this.title,
+    this.showPhoneCode = true,
+  });
 
   @override
   State<_CenteredCountryPickerDialog> createState() =>
@@ -731,15 +736,14 @@ class _CenteredCountryPickerDialogState
         return;
       }
 
-      _filteredCountries =
-          _allCountries.where((country) {
-            final name = country.name.toLowerCase();
-            final code = country.countryCode.toLowerCase();
-            final phone = country.phoneCode.toLowerCase();
-            return name.contains(query) ||
-                code.contains(query) ||
-                phone.contains(query);
-          }).toList();
+      _filteredCountries = _allCountries.where((country) {
+        final name = country.name.toLowerCase();
+        final code = country.countryCode.toLowerCase();
+        final phone = country.phoneCode.toLowerCase();
+        return name.contains(query) ||
+            code.contains(query) ||
+            phone.contains(query);
+      }).toList();
     });
   }
 
@@ -762,10 +766,9 @@ class _CenteredCountryPickerDialogState
     final dialogHeight = originalHeight + extraTop + extraBottom;
     final verticalShift = -(extraTop - extraBottom) / 2;
 
-    final dialogWidth =
-        screenWidth > 1200
-            ? 640.0
-            : screenWidth > 900
+    final dialogWidth = screenWidth > 1200
+        ? 640.0
+        : screenWidth > 900
             ? screenWidth * 0.56
             : screenWidth * 0.88;
 
@@ -828,16 +831,17 @@ class _CenteredCountryPickerDialogState
                           ),
                           child: Row(
                             children: [
-                              SizedBox(
-                                width: 64,
-                                child: Text(
-                                  '+${country.phoneCode}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF2C2C2C),
+                              if (widget.showPhoneCode)
+                                SizedBox(
+                                  width: 64,
+                                  child: Text(
+                                    '+${country.phoneCode}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Color(0xFF2C2C2C),
+                                    ),
                                   ),
                                 ),
-                              ),
                               Expanded(
                                 child: Text(
                                   country.name,
