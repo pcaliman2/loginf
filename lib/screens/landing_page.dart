@@ -84,8 +84,8 @@ class _OWALandingPageState extends State<OWALandingPage> {
       //OWAHeader(),
       //OWASignUpSection(key: UniqueKey()),
       //OWALoginSection(key: UniqueKey()),
-      OWASignUpSection(key: UniqueKey()),
-      //OWAEditProfile(key: UniqueKey()),
+      //OWASignUpSection(key: UniqueKey()),
+      OWAEditProfile(key: UniqueKey()),
 
       ///OWAFooter(key: UniqueKey()),
     ];
@@ -98,8 +98,8 @@ class _OWALandingPageState extends State<OWALandingPage> {
       // InfoSectionMobile(key: UniqueKey()),
 
       //_buildMobileDivider(),
-      OWASignUpSectionMobile(key: UniqueKey()),
-      //OWAEditProfileMobile(key: UniqueKey()),
+      //OWASignUpSectionMobile(key: UniqueKey()),
+      OWAEditProfileMobile(key: UniqueKey()),
       //OWADiscoverSectionMobile(key: UniqueKey()),
 
       //_buildMobileDivider(),
