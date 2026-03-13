@@ -96,7 +96,7 @@ class _LoginFormMobileState extends State<_LoginFormMobile> {
             controller: ctrl,
             obscureText: obscure,
             decoration: _dec(),
-            validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+            validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
           ),
         ],
       ),
@@ -128,7 +128,7 @@ class _LoginFormMobileState extends State<_LoginFormMobile> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "WELCOME BACK",
+            'WELCOME BACK',
             style: TextStyle(
               fontFamily: 'Basier Square Mono',
               fontWeight: FontWeight.w400,
@@ -140,22 +140,22 @@ class _LoginFormMobileState extends State<_LoginFormMobile> {
           ),
           const SizedBox(height: 8),
           const Text(
-            "Log In to access your dashboard.",
+            'Log In to access your dashboard.',
             style: TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 18),
-          _field("Email", _email),
-          _field("Password", _password, obscure: true),
+          _field('Email', _email),
+          _field('Password', _password, obscure: true),
           const SizedBox(height: 22),
           Center(
             child: Column(
               children: [
                 _LoginImageButtonMobile(
-                  text: "LOG IN",
+                  text: 'LOG IN',
                   onTap: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Login form valid")),
+                        const SnackBar(content: Text('Login form valid')),
                       );
                     }
                   },
@@ -164,7 +164,7 @@ class _LoginFormMobileState extends State<_LoginFormMobile> {
                 GestureDetector(
                   onTap: _goToSignUp,
                   child: const Text(
-                    "Not a member yet? Sign Up",
+                    'Not a member yet? Sign Up',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Basier Square Mono',
@@ -188,6 +188,7 @@ class _LoginRightImageMobile extends StatelessWidget {
 
   void _goToSignUp(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const OWASignUpSection()),
@@ -202,16 +203,10 @@ class _LoginRightImageMobile extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset('assets/events4.png', fit: BoxFit.cover),
-            ),
+            child: Image.asset('assets/events4.png', fit: BoxFit.cover),
           ),
           Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Container(color: Colors.black.withOpacity(0.35)),
-            ),
+            child: Container(color: Colors.black.withOpacity(0.35)),
           ),
           Center(
             child: Padding(
@@ -246,7 +241,7 @@ class _LoginRightImageMobile extends StatelessWidget {
                     backgroundColor: Colors.transparent,
                     borderColor: Colors.white,
                     textColor: Colors.white,
-                    pressedBackgroundColor: const Color(0x14FFFFFF),
+                    pressedBackgroundColor: Color(0x14FFFFFF),
                     onTap: () => _goToSignUp(context),
                   ),
                 ],

@@ -145,11 +145,13 @@ class _LoginFormState extends State<_LoginForm> {
       child: Form(
         key: _formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            const SizedBox(height: 10),
+
             const Text(
               "WELCOME BACK",
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Basier Square Mono',
                 fontWeight: FontWeight.w400,
@@ -159,29 +161,40 @@ class _LoginFormState extends State<_LoginForm> {
                 height: 1.25,
               ),
             ),
+
             const SizedBox(height: 6),
-            const Text("Log In to access your dashboard."),
-            const SizedBox(height: 14),
-            _field("Email", _email),
-            _field("Password", _password, obscure: true),
-            const SizedBox(height: 16),
-            Center(
-              child: Column(
-                children: [
-                  _LoginImageButton(
-                    text: "LOG IN",
-                    onTap: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Login form valid")),
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ),
+
+            const Text(
+              "Log In to access your dashboard.",
+              textAlign: TextAlign.center,
             ),
+
+            const SizedBox(height: 24),
+
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _field("Email", _email),
+            ),
+
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _field("Password", _password, obscure: true),
+            ),
+
+            const Spacer(),
+
+            _LoginImageButton(
+              text: "LOG IN",
+              onTap: () {
+                if (_formKey.currentState?.validate() ?? false) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Login form valid")),
+                  );
+                }
+              },
+            ),
+
+            const SizedBox(height: 6),
           ],
         ),
       ),
@@ -244,7 +257,7 @@ class _LoginRightImage extends StatelessWidget {
                   borderColor: Colors.white,
                   textColor: Colors.white,
                   textHoverColor: Colors.white,
-                  hoverBackgroundColor: Color(0x14FFFFFF),
+                  hoverBackgroundColor: const Color(0x14FFFFFF),
                   onTap: () => _goToSignUp(context),
                 ),
               ],
