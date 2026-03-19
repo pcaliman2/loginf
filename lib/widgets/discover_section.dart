@@ -1,27 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:owa_flutter/discover_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
 import 'package:owa_flutter/useful/size_config.dart';
-import 'package:owa_flutter/widgets/discover_card.dart';
+import 'package:owa_flutter/useful/text_styles.dart';
+import 'package:owa_flutter/widgets/build_separator.dart';
+import 'package:owa_flutter/widgets/discover_card_image_from_url.dart';
 import 'package:owa_flutter/widgets/fade_in_widget.dart';
 import 'package:owa_flutter/widgets/headline.dart';
+import 'package:owa_flutter/models/owa_specs.dart';
 
-class OWADiscoverSection extends StatelessWidget {
+class OWADiscoverSection extends StatefulWidget {
   const OWADiscoverSection({super.key});
 
   @override
+  State<OWADiscoverSection> createState() => _OWADiscoverSectionState();
+}
+
+class _OWADiscoverSectionState extends State<OWADiscoverSection> {
+  // Spec state
+  OWADiscoverSectionSpec? _spec;
+  bool _isLoading = true;
+  String? _error;
+
+  // ==========================
+  // ===== LIFECYCLE =====
+  // ==========================
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSpec();
+  }
+
+  Future<void> _loadSpec() async {
+    try {
+      final spec = await OWADiscoverService.fetchSpec();
+      setState(() {
+        _spec = spec;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) return const SizedBox.shrink();
+    if (_error != null) return const SizedBox.shrink();
+
+    final cards = _spec!.data.discoverSections;
+    final pageDescription = _spec!.data.pageDescription;
+
     return Container(
       width: SizeConfig.w(1440),
-      height: 978.0, //SizeConfig.h(978.0),
       color: colors.backgroundColor, // Same as body background
       padding: EdgeInsets.symmetric(horizontal: SizeConfig.w(42)),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header section
+          /// Header section
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Left side - Title
               SizedBox(
@@ -29,112 +74,76 @@ class OWADiscoverSection extends StatelessWidget {
                 child: Headline(
                   child: Text(
                     'DISCOVER OWA',
-                    style: TextStyle(
-                      fontFamily: 'Basier Square Mono',
-                      fontWeight: FontWeight.w400,
-                      fontSize: SizeConfig.t(19),
-                      height: 1.51,
-                      letterSpacing: SizeConfig.t(19) * 0.12,
-                      color: const Color(0xFF2C2C2C),
-                    ),
+                    style: OWATextStyles.sectionTitle,
                   ),
                 ),
               ),
 
-              SizedBox(width: SizeConfig.w(20)),
-
-              // Right side - Description
-              SizedBox(
-                width: SizeConfig.w(430),
-                height: SizeConfig.w(72),
-                child: Headline(
-                  child: Text(
-                    'From our wellness club and café to our guest residences and creative collaborations, OWA brings together the essential dimensions of wellbeing under one vision.',
-                    style: TextStyle(
-                      fontFamily: 'Arbeit',
-                      fontWeight: FontWeight.w300,
-                      fontSize: SizeConfig.t(15),
-                      height: 24 / 15,
-                      letterSpacing: 0,
-                      color: const Color(0xFF2C2C2C),
-                    ),
-                  ),
-                ),
+              // Right side - Index
+              Headline(
+                child: Text('1.0', style: OWATextStyles.sectionTitleIndex),
               ),
             ],
           ),
 
+          /// Spacer
+          SizedBox(height: SizeConfig.h(1229.39 - (1186.44 + 30))),
+
+          /// Divider
+          buildSeparator(),
+
+          /// Spacer
+          SizedBox(height: SizeConfig.h(1288.51 - 1229.39)),
+
+          SizedBox(
+            width: SizeConfig.w(521.93017578125),
+            // height: SizeConfig.h(78),
+            height: 78.0,
+            child: Headline(
+              child: Text(
+                pageDescription,
+                style: OWATextStyles.sectionSubtitle,
+              ),
+            ),
+          ),
+
+          /// Spacer
           SizedBox(height: SizeConfig.h(80)),
 
-          // Cards grid
+          /// Cards grid
           FadeInWidget(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Wellness Club Card
-                Expanded(
-                  child: DiscoverCard(
-                    imagePath: 'assets/discover_1.jpg',
-                    title: 'WELLNESS CLUB',
-                    buttonText: 'BOOK A SESSION',
-                    description:
-                        'Step into a space of rhythm and release. With private saunas, invigorating cold plunges, and serene lounge areas, OWA\'s Wellness Club is designed for mindful recovery, whether in solitude or shared with others.',
-                    onButtonTap: () {
-                      // Handle book a session
-                    },
+                for (int i = 0; i < cards.length; i++) ...[
+                  Expanded(
+                    child: DiscoverCard(
+                      imagePath: cards[i].cardBackgroundImage.url,
+                      title: cards[i].cardTitle,
+                      buttonText: cards[i].cardLinkText,
+                      description: cards[i].cardDescription,
+                      onButtonTap: () async {
+                        final url = cards[i].cardLinkUrl;
+                        if (url.isNotEmpty) {
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        }
+                      },
+                    ),
                   ),
-                ),
-
-                SizedBox(width: SizeConfig.w(20)),
-
-                // SESEN Room x OWA Card
-                Expanded(
-                  child: DiscoverCard(
-                    imagePath: 'assets/discover_2.jpg',
-                    title: 'SESEN ROOM X OWA',
-                    buttonText: 'LEARN MORE',
-                    description:
-                        'SESEN Room x OWA brings Mexico City\'s most trusted name in supplements to Roma Norte. Featuring premium collagen-based formulations and a food offering that is both elevated and restorative, it\'s a destination for those who see nutrition as a cornerstone of wellbeing.',
-                    onButtonTap: () {
-                      // Handle learn more
-                    },
-                  ),
-                ),
-
-                SizedBox(width: SizeConfig.w(20)),
-
-                // Casa OWA Card
-                Expanded(
-                  child: DiscoverCard(
-                    imagePath: 'assets/discover_3.jpg',
-                    title: 'CASA OWA',
-                    buttonText: 'RESERVE YOUR STAY',
-                    description:
-                        'A collection of nine elevated residences in Roma Norte—Mexico City\'s most vibrant neighborhood. CASA OWA blends the comfort of a private apartment with concierge service and the highest level of hospitality. With full access to the Wellness Club, every stay feels like an immersive OWA experience, far beyond a typical hotel stay.',
-                    onButtonTap: () {
-                      // Handle reserve stay
-                    },
-                  ),
-                ),
-
-                SizedBox(width: SizeConfig.w(20)),
-
-                // Collaborations Card
-                Expanded(
-                  child: DiscoverCard(
-                    imagePath: 'assets/discover_4.jpg',
-                    title: 'COLLABORATIONS',
-                    buttonText: 'CONTACT US TO GET STARTED',
-                    description:
-                        'OWA\'s rooftop is designed for curated happenings—wellness sessions, cultural gatherings, and intimate events that bring people together. Whether joining as a guest or creating alongside us as a partner, every experience here reflects the spirit of OWA: connection, creativity, and wellbeing.',
-                    onButtonTap: () {
-                      // Handle contact us
-                    },
-                  ),
-                ),
+                  if (i < cards.length - 1) SizedBox(width: SizeConfig.w(20)),
+                ],
               ],
             ),
           ),
+
+          /// Spacer
+          SizedBox(height: 2035 - (1476.78 + 410.18)),
         ],
       ),
     );

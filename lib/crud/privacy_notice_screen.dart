@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
+import 'package:owa_flutter/useful_widgets/precise_animated_nav_item.dart';
 import 'package:owa_flutter/widgets/footer_section.dart';
 import 'package:owa_flutter/useful/is_desktop_from_context.dart';
 import 'package:owa_flutter/widgets/mobile_footer.dart';
-import 'package:owa_flutter/widgets/owa_animated_nav_item.dart';
 import 'package:owa_flutter/useful/size_config.dart';
 
 class OWAPrivacyNoticePage extends StatefulWidget {
@@ -222,15 +222,9 @@ class _OWAPrivacyNoticePageState extends State<OWAPrivacyNoticePage>
                           position: _textSlideAnimation,
                           child: Row(
                             children: [
-                              _buildNavItem(
-                                'BECOME A MEMBER',
-                                NavItemType.squareMono,
-                              ),
+                              _buildNavItem('BECOME A MEMBER'),
                               const SizedBox(width: 40),
-                              _buildNavItem(
-                                'BOOK A SESSION',
-                                NavItemType.squareMono,
-                              ),
+                              _buildNavItem('BOOK A SESSION'),
                             ],
                           ),
                         ),
@@ -248,14 +242,11 @@ class _OWAPrivacyNoticePageState extends State<OWAPrivacyNoticePage>
                           position: _textSlideAnimation,
                           child: Row(
                             children: [
-                              _buildNavItem('SERVICES', NavItemType.circleMono),
+                              _buildNavItem('SERVICES'),
                               const SizedBox(width: 40),
-                              _buildNavItem('SCIENCE', NavItemType.circleMono),
+                              _buildNavItem('SCIENCE'),
                               const SizedBox(width: 40),
-                              _buildNavItem(
-                                'THERAPIES',
-                                NavItemType.circleMono,
-                              ),
+                              _buildNavItem('THERAPIES'),
                             ],
                           ),
                         ),
@@ -270,11 +261,11 @@ class _OWAPrivacyNoticePageState extends State<OWAPrivacyNoticePage>
     );
   }
 
-  Widget _buildNavItem(String text, NavItemType type) {
-    return OWAAnimatedNavItem(
+  Widget _buildNavItem(String text) {
+    return PreciseAnimatedNavItem(
       text: text,
-      type: type,
-      color: Colors.black, // Override color for light background
+      textColor: Colors.black,
+      useInvertedText: true,
     );
   }
 

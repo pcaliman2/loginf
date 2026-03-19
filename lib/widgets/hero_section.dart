@@ -1,13 +1,30 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:owa_flutter/widgets/animated_hero_text.dart';
 import 'package:owa_flutter/crud/privacy_notice_screen.dart';
-import 'package:owa_flutter/widgets/owa_animated_nav_item.dart';
+import 'package:owa_flutter/useful/size_config.dart';
+import 'package:owa_flutter/useful/text_styles.dart';
+import 'package:owa_flutter/useful_widgets/precise_animated_nav_item.dart';
+import 'package:owa_flutter/widgets/action_button.dart';
+import 'package:owa_flutter/widgets/owa_logo.dart';
+// 1) Import
+import 'package:owa_flutter/widgets/owa_signup_popout.dart';
 
+// 2) Flag global (para asegurar que solo salga una vez por sesión de la app)
+bool _owaSignupPopoutShownThisRun = false;
+
+//  1. Modificación de la firma para aceptar callback
 class HeroSection extends StatefulWidget {
-  const HeroSection({super.key});
+  const HeroSection({
+    super.key,
+    this.onNavTap,
+    this.onCartTap,
+    this.cartItemCount = 0,
+  });
+
+  final void Function(String label)? onNavTap;
+  final VoidCallback? onCartTap;
+  final int cartItemCount;
 
   @override
   State<HeroSection> createState() => _HeroSectionState();
@@ -22,6 +39,9 @@ class _HeroSectionState extends State<HeroSection>
   late Animation<double> _textFadeAnimation;
   late Animation<Offset> _textSlideAnimation;
 
+  // 3) Timer field
+  Timer? _popoutTimer;
+
   @override
   void initState() {
     super.initState();
@@ -76,14 +96,36 @@ class _HeroSectionState extends State<HeroSection>
       Future.delayed(const Duration(milliseconds: 600), () {
         _textController.forward();
       });
+
+      // 4) Llamada en postFrameCallback
+      _maybeShowSignupPopoutOnce();
     });
   }
 
   @override
   void dispose() {
+    // 6) Cancelar timer
+    _popoutTimer?.cancel();
+
     _heroController.dispose();
     _textController.dispose();
     super.dispose();
+  }
+
+  // 5) MÃ©todo lÃ³gico para mostrar el popout
+  void _maybeShowSignupPopoutOnce() {
+    if (_owaSignupPopoutShownThisRun) return;
+    _owaSignupPopoutShownThisRun = true;
+
+    _popoutTimer?.cancel();
+    _popoutTimer = Timer(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+
+      showOwaSignupPopout(
+        context,
+        image: const AssetImage('assets/membership_1.jpg'),
+      );
+    });
   }
 
   @override
@@ -110,57 +152,46 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildSplitBackgrounds() {
-    return Row(
-      children: [
-        // Left Bar - Blue accent line
-        Container(
-          width: 8,
-          height: MediaQuery.of(context).size.height,
-          color: const Color(0xFF0A7FD1), // Blue accent color
-        ),
+    const bgAsset = 'assets/discover_4.jpg';
 
-        // Main Hero Image
-        Expanded(
-          child: ClipRect(
-            child: AnimatedBuilder(
-              animation: Listenable.merge([
-                _heroZoomAnimation,
-                _heroOpacityAnimation,
-              ]),
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _heroZoomAnimation.value,
-                  child: Opacity(
-                    opacity: _heroOpacityAnimation.value,
-                    child: Container(
-                      height: MediaQuery.of(context).size.height,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/bridge1a.png'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      // Dark overlay for better text contrast
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.2),
-                              Colors.black.withValues(alpha: 0.4),
-                            ],
-                          ),
-                        ),
-                      ),
+    return ClipRect(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([
+          _heroZoomAnimation,
+          _heroOpacityAnimation,
+        ]),
+        builder: (context, child) {
+          return Transform.scale(
+            alignment: Alignment.center,
+            scale: _heroZoomAnimation.value,
+            child: Opacity(
+              opacity: _heroOpacityAnimation.value,
+              child: Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(bgAsset),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.15),
+                        Colors.black.withValues(alpha: 0.45),
+                      ],
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
@@ -169,83 +200,62 @@ class _HeroSectionState extends State<HeroSection>
       top: 0,
       left: 0,
       right: 0,
-      child: SafeArea(
+      child: ClipRect(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 25),
+          padding: EdgeInsets.only(
+            left: SizeConfig.w(42),
+            right: SizeConfig.w(42),
+            top: SizeConfig.w(32),
+            bottom: SizeConfig.w(16 * 2),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left Logo - positioned to the left
-              AnimatedBuilder(
-                animation: _textFadeAnimation,
-                builder: (context, child) {
-                  return FadeTransition(
-                    opacity: _textFadeAnimation,
-                    child: SlideTransition(
-                      position: _textSlideAnimation,
-                      child: GestureDetector(
-                        onTap:
-                            () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => OWAPrivacyNoticePage(),
-                              ),
-                            ),
-                        child: _buildLogo(),
+              // Logo LEFT
+              GestureDetector(
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => OWAPrivacyNoticePage(),
                       ),
                     ),
-                  );
-                },
+                child: _buildLogo(),
               ),
 
-              // Left Navigation Items (Basier Square Mono)
-              Expanded(
-                child: AnimatedBuilder(
-                  animation: _textFadeAnimation,
-                  builder: (context, child) {
-                    return FadeTransition(
-                      opacity: _textFadeAnimation,
-                      child: SlideTransition(
-                        position: _textSlideAnimation,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildNavItem(
-                              'BECOME A MEMBER',
-                              NavItemType.squareMono,
-                            ),
-                            const SizedBox(width: 40),
-                            _buildNavItem(
-                              'BOOK A SESSION',
-                              NavItemType.squareMono,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              Spacer(),
 
-              // Right Navigation Items (Basier Circle Mono)
-              AnimatedBuilder(
-                animation: _textFadeAnimation,
-                builder: (context, child) {
-                  return FadeTransition(
-                    opacity: _textFadeAnimation,
-                    child: SlideTransition(
-                      position: _textSlideAnimation,
-                      child: Row(
-                        children: [
-                          _buildNavItem('SERVICES', NavItemType.circleMono),
-                          const SizedBox(width: 40),
-                          _buildNavItem('SCIENCE', NavItemType.circleMono),
-                          const SizedBox(width: 40),
-                          _buildNavItem('THERAPIES', NavItemType.circleMono),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+              // Nav items RIGHT
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: SizeConfig.w(70),
+                    child: _buildNavItem('Memberships'),
+                  ),
+                  const SizedBox(width: 34),
+                  SizedBox(
+                    width: SizeConfig.w(50),
+                    child: _buildNavItem('Services'),
+                  ),
+                  const SizedBox(width: 34),
+                  SizedBox(
+                    width: SizeConfig.w(55),
+                    child: _buildNavItem('Therapies'),
+                  ),
+                  const SizedBox(width: 34),
+                  SizedBox(
+                    width: SizeConfig.w(50),
+                    child: _buildNavItem('Contact'),
+                  ),
+                  const SizedBox(width: 34),
+                  SizedBox(
+                    width: SizeConfig.w(50),
+                    child: _buildNavItem('FAQ'),
+                  ),
+                  const SizedBox(width: 34),
+                  // _buildCartButton(),
+                ],
               ),
             ],
           ),
@@ -255,568 +265,142 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildLogo() {
-    return Container(
-      height: 40,
-      alignment: Alignment.center,
-      child: SvgPicture.asset(
-        'assets/OWA_Logo.svg',
-        height: 200, // Match your navbar height
-        fit: BoxFit.fitWidth,
-        colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-      ),
-    );
-
-    // return Row(
-    //   mainAxisSize: MainAxisSize.min,
-    //   children: [
-    //     const Text(
-    //       ' O',
-    //       style: TextStyle(
-    //         color: Colors.white,
-    //         fontSize: 32,
-    //         fontWeight: FontWeight.w300,
-    //         letterSpacing: 4.0,
-    //       ),
-    //     ),
-    //     const SizedBox(width: 16),
-    //     const Text(
-    //       'W',
-    //       style: TextStyle(
-    //         color: Colors.white,
-    //         fontSize: 32,
-    //         fontWeight: FontWeight.w300,
-    //         letterSpacing: 4.0,
-    //       ),
-    //     ),
-    //     const SizedBox(width: 16),
-    //     const Text(
-    //       'A°',
-    //       style: TextStyle(
-    //         color: Colors.white,
-    //         fontSize: 32,
-    //         fontWeight: FontWeight.w300,
-    //         letterSpacing: 4.0,
-    //       ),
-    //     ),
-    //   ],
-    // );
+    return OWALogo();
   }
 
-  Widget _buildNavItem(String text, NavItemType type) {
-    return OWAAnimatedNavItem(text: text, type: type);
-  }
-
-  Widget _buildCenterHeroText() {
-    return Positioned.fill(
-      child: Center(
-        child: AnimatedBuilder(
-          animation: _textFadeAnimation,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _textFadeAnimation,
-              child: SlideTransition(
-                position: _textSlideAnimation,
-                child: const AnimatedHeroText(),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class HeroSectionMobile extends StatefulWidget {
-  const HeroSectionMobile({super.key});
-
-  @override
-  State<HeroSectionMobile> createState() => _HeroSectionMobileState();
-}
-
-class _HeroSectionMobileState extends State<HeroSectionMobile>
-    with TickerProviderStateMixin {
-  late AnimationController _heroController;
-  late AnimationController _textController;
-  late Animation<double> _heroZoomAnimation;
-  late Animation<double> _heroOpacityAnimation;
-  late Animation<double> _textFadeAnimation;
-  late Animation<Offset> _textSlideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Hero image animation controller
-    _heroController = AnimationController(
-      duration: const Duration(milliseconds: 8000),
-      vsync: this,
-    );
-
-    // Text animation controller
-    _textController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    );
-
-    // Hero zoom animation - subtle ken-burns effect
-    _heroZoomAnimation = Tween<double>(begin: 1.08, end: 1.0).animate(
-      CurvedAnimation(parent: _heroController, curve: Curves.easeOutCubic),
-    );
-
-    // Hero opacity animation
-    _heroOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _heroController,
-        curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
-      ),
-    );
-
-    // Text fade animation
-    _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _textController,
-        curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-      ),
-    );
-
-    // Text slide animation
-    _textSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _textController,
-        curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    // Start animations
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _heroController.forward();
-      Future.delayed(const Duration(milliseconds: 600), () {
-        _textController.forward();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _heroController.dispose();
-    _textController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      child: Stack(
-        children: [
-          // Split Background Images
-          _buildSplitBackgrounds(),
-
-          // Navigation Header
-          _buildNavigationHeader(),
-
-          // Center Hero Text with Animation
-          _buildCenterHeroText(),
-
-          // Bottom Right Logo Icon
-          // _buildBottomRightIcon(),
-        ],
-      ),
+  // âœ… 2. Hacemos el NavItem clickeable
+  Widget _buildNavItem(String text) {
+    return GestureDetector(
+      // behavior: HitTestBehavior.translucent,
+      onTap: () => widget.onNavTap?.call(text),
+      child: PreciseAnimatedNavItem(text: text, useInvertedText: true),
     );
   }
 
-  Widget _buildSplitBackgrounds() {
-    return Column(
-      children: [
-        // Left Half - Water/Ocean Image
-        Expanded(
-          child: ClipRect(
-            child: AnimatedBuilder(
-              animation: Listenable.merge([
-                _heroZoomAnimation,
-                _heroOpacityAnimation,
-              ]),
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _heroZoomAnimation.value,
-                  child: Opacity(
-                    opacity: _heroOpacityAnimation.value,
-                    child: Container(
-                      height: MediaQuery.of(context).size.height,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                            'assets/hero_left.jpg',
-                          ), // Your left background image
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      // Dark overlay for better text contrast
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.15),
-                              Colors.black.withValues(alpha: 0.4),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-
-        // Right Half - Person Image
-        Expanded(
-          child: ClipRect(
-            child: AnimatedBuilder(
-              animation: Listenable.merge([
-                _heroZoomAnimation,
-                _heroOpacityAnimation,
-              ]),
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _heroZoomAnimation.value,
-                  child: Opacity(
-                    opacity: _heroOpacityAnimation.value,
-                    child: Container(
-                      height: MediaQuery.of(context).size.height,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                            'assets/hero_right.png',
-                          ), // Your right background image
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      // Subtle warm overlay
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.1),
-                              Colors.black.withValues(alpha: 0.3),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNavigationHeader() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: AnimatedBuilder(
-            animation: _textFadeAnimation,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _textFadeAnimation,
-                child: SlideTransition(
-                  position: _textSlideAnimation,
-                  child: GestureDetector(
-                    onTap:
-                        () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => OWAPrivacyNoticePage(),
-                          ),
-                        ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'O',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w300,
-                            letterSpacing: 3.0,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'W',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w300,
-                            letterSpacing: 3.0,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'A°',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w300,
-                            letterSpacing: 3.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCenterHeroText() {
-    return Positioned.fill(
-      child: Center(
-        child: AnimatedBuilder(
-          animation: _textFadeAnimation,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _textFadeAnimation,
-              child: SlideTransition(
-                position: _textSlideAnimation,
-                child: const MobileAnimatedHeroText(),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class OWADrawer extends StatelessWidget {
-  const OWADrawer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: const Color(0xFFEDE8E1), // Beige/cream background
-      width: MediaQuery.of(context).size.width, // Full width drawer
-      child: SafeArea(
-        child: Column(
+  Widget _buildCartButton() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: widget.onCartTap,
+      child: SizedBox(
+        width: 34,
+        height: 34,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
           children: [
-            // Header with logo and close button
-            _buildDrawerHeader(context),
-
-            // Navigation items
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    _buildMenuItem('BECOME A MEMBER'),
-                    const SizedBox(height: 32),
-                    _buildMenuItem('BOOK A SESSION'),
-                    const SizedBox(height: 32),
-                    _buildMenuItem('SERVICES'),
-                    const SizedBox(height: 32),
-                    _buildMenuItem('SCIENCE'),
-                    const SizedBox(height: 32),
-                    _buildMenuItemWithIcon('THERAPIES'),
-                  ],
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.35),
+                  width: 0.8,
                 ),
               ),
+              child: Icon(
+                Icons.shopping_bag_outlined,
+                color: Colors.white.withValues(alpha: 0.9),
+                size: 20,
+              ),
             ),
-
-            // Footer with chat icon and links
-            _buildDrawerFooter(),
+            // Badge
+            if (widget.cartItemCount > 0)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeInOutCubic,
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(999),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '${widget.cartItemCount}',
+                    style: const TextStyle(
+                      fontSize: 9,
+                      color: Color(0xFF222222),
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Logo
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'O',
-                style: TextStyle(
-                  color: Colors.black.withValues(alpha: 0.8),
-                  fontSize: 32,
-                  fontWeight: FontWeight.w300,
-                  letterSpacing: 8.0,
-                ),
-              ),
-              const SizedBox(width: 20),
-              Text(
-                'W',
-                style: TextStyle(
-                  color: Colors.black.withValues(alpha: 0.8),
-                  fontSize: 32,
-                  fontWeight: FontWeight.w300,
-                  letterSpacing: 8.0,
-                ),
-              ),
-              const SizedBox(width: 20),
-              Text(
-                'A°',
-                style: TextStyle(
-                  color: Colors.black.withValues(alpha: 0.8),
-                  fontSize: 32,
-                  fontWeight: FontWeight.w300,
-                  letterSpacing: 8.0,
-                ),
-              ),
-            ],
-          ),
+  Widget _buildCenterHeroText() {
+    const copy =
+        "OWA° is Mexico City’s first wellness club,\n"
+        "bringing together the essential pillars of human\n"
+        "wellbeing in one place.";
 
-          // Close button
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.black, size: 28),
-            onPressed: () => Navigator.of(context).pop(),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-        ],
-      ),
-    );
-  }
+    return Positioned.fill(
+      child: Center(
+        child: AnimatedBuilder(
+          animation: _textFadeAnimation,
+          builder: (context, child) {
+            final w = MediaQuery.of(context).size.width;
 
-  Widget _buildMenuItem(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Colors.black,
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        letterSpacing: 2.0,
-        height: 1.5,
-      ),
-    );
-  }
+            final maxCopyWidth = w >= 1200 ? 640.0 : w * 0.75;
+            final buttonWidth =
+                w >= 1200 ? 420.0 : (w * 0.70).clamp(260.0, 420.0);
 
-  Widget _buildMenuItemWithIcon(String text) {
-    return Row(
-      children: [
-        Text(
-          text,
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 2.0,
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Icon(
-          Icons.arrow_outward,
-          size: 16,
-          color: Colors.black.withValues(alpha: 0.7),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDrawerFooter() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Chat icon
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.black.withValues(alpha: 0.3),
-                width: 1.5,
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.chat_bubble_outline,
-              size: 20,
-              color: Colors.black.withValues(alpha: 0.7),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Footer links - left side
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
+            return FadeTransition(
+              opacity: _textFadeAnimation,
+              child: SlideTransition(
+                position: _textSlideAnimation,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildFooterLink('Creative Strategy'),
-                    const SizedBox(height: 12),
-                    _buildFooterLink('Terms of Service'),
-                    const SizedBox(height: 12),
-                    _buildFooterLink('Privacy Policy'),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxCopyWidth),
+                      child: Text(
+                        copy,
+                        textAlign: TextAlign.center,
+                        style: OWATextStyles.heroMainText,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    // CTA button
+                    ActionButton(
+                      text: 'BOOK YOUR FIRST VISIT',
+                      onTap: () {
+                        widget.onNavTap?.call('Therapies');
+                      },
+
+                      width: buttonWidth,
+                      height: 44,
+                      margin: EdgeInsets.zero,
+
+                      baseColor: Colors.black.withValues(alpha: 0.10),
+                      hoverColor: Colors.white.withValues(alpha: 0.08),
+                      borderColor: Colors.white.withValues(alpha: 0.35),
+                    ),
                   ],
                 ),
               ),
-
-              const SizedBox(width: 40),
-
-              // Footer links - right side
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildFooterLink('Cookies'),
-                    const SizedBox(height: 12),
-                    _buildFooterLink('Disclaimers'),
-                    const SizedBox(height: 12),
-                    _buildFooterLink('© All rights reserved 2025'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFooterLink(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: Colors.black.withValues(alpha: 0.4),
-        fontSize: 11,
-        fontWeight: FontWeight.w300,
-        letterSpacing: 0.5,
-        height: 1.3,
+            );
+          },
+        ),
       ),
     );
   }

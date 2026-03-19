@@ -408,7 +408,7 @@ final spec = {
           },
           "bottomBar": {
             "leftNote": "Creative Strategy @ Latente",
-            "copyright": "© All rights reserved 2025",
+            "copyright": "© All rights reserved 2026",
             "legalLinks": [
               {"href": "/terms", "label": "Terms of Service"},
               {"href": "/privacy", "label": "Privacy Policy"},

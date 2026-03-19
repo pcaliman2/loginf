@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:owa_flutter/useful/colors.dart';
 
-// Enum to differentiate navigation item types
 enum NavItemType { squareMono, circleMono }
 
 class OWAAnimatedNavItem extends StatefulWidget {
   final String text;
   final NavItemType type;
   final Color color;
+  final VoidCallback? onTap;
 
   const OWAAnimatedNavItem({
     super.key,
     required this.text,
     required this.type,
     this.color = Colors.white,
+    this.onTap,
   });
 
   @override
@@ -22,22 +22,21 @@ class OWAAnimatedNavItem extends StatefulWidget {
 
 class _OWAAnimatedNavItemState extends State<OWAAnimatedNavItem>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+  late final AnimationController _controller;
+  late final Animation<double> _lineAnim;
   bool _isHovered = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 180),
       vsync: this,
     );
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _lineAnim = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
@@ -47,111 +46,116 @@ class _OWAAnimatedNavItemState extends State<OWAAnimatedNavItem>
   }
 
   void _onEnter() {
-    setState(() {
-      _isHovered = true;
-    });
+    if (_isHovered) return;
+    setState(() => _isHovered = true);
     _controller.forward();
   }
 
   void _onExit() {
-    setState(() {
-      _isHovered = false;
-    });
+    if (!_isHovered) return;
+    setState(() => _isHovered = false);
     _controller.reverse();
   }
 
-  TextStyle _getTextStyle() {
+  TextStyle _baseTextStyle() {
+    // ✅ Match screenshot: fontSize ~10, height ~17px => 1.7
+    // (En tu screenshot los items marcaban 17px de alto)
+    final common = TextStyle(
+      color: widget.color,
+      fontSize: 10,
+      fontWeight: FontWeight.w400,
+      height: 1.7,
+      letterSpacing: 0.0,
+      decoration: TextDecoration.none,
+    );
+
     switch (widget.type) {
       case NavItemType.squareMono:
-        // Basier Square Mono specifications
-        return TextStyle(
-          fontFamily: 'Basier Square Mono',
-          color: widget.color,
-          fontSize: 10,
-          fontWeight: FontWeight.w400,
-          height: 1.5, // 150% line height
-          letterSpacing: 1.0, // 10% of 10px = 1px
-        );
+        return common.copyWith(fontFamily: 'Basier Square Mono');
       case NavItemType.circleMono:
-        // Basier Circle Mono specifications
-        return TextStyle(
-          fontFamily: 'Basier Circle Mono',
-          color: widget.color,
-          fontSize: 10,
-          fontWeight: FontWeight.w400,
-          height: 1.0, // 100% line height
-          letterSpacing: 1.0, // 10% of 10px = 1px
-        );
+        return common.copyWith(fontFamily: 'Basier Circle Mono');
     }
   }
 
-  TextStyle _getHoveredTextStyle() {
-    final baseStyle = _getTextStyle();
-    return baseStyle.copyWith(fontWeight: FontWeight.w500);
+  TextStyle _hoverTextStyle() {
+    // ✅ Puedes subir weight sin que brinque el underline (lo calculamos con baseStyle)
+    return _baseTextStyle().copyWith(fontWeight: FontWeight.w500);
+  }
+
+  double _stableTextWidth() {
+    // ✅ SIEMPRE con baseStyle para que el underline NO cambie con hover
+    final tp = TextPainter(
+      text: TextSpan(text: widget.text, style: _baseTextStyle()),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+    return tp.width;
   }
 
   @override
   Widget build(BuildContext context) {
+    final clickable = widget.onTap != null;
+    final style = _isHovered ? _hoverTextStyle() : _baseTextStyle();
+
+    final underlineColor = widget.color.withValues(alpha: 0.70);
+
+    // ✅ Hitbox controlado (sin padding gigante)
+    // Ajusta si quieres más “aire”, pero así queda más cercano al screenshot.
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: clickable ? SystemMouseCursors.click : MouseCursor.defer,
       onEnter: (_) => _onEnter(),
       onExit: (_) => _onExit(),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // The navigation text
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: _isHovered ? _getHoveredTextStyle() : _getTextStyle(),
-              child:
-                  widget.text != 'THERAPIES'
-                      ? Text(widget.text)
-                      : Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(widget.text),
-                          SizedBox(width: 4.0),
-                          Icon(Icons.north_east, color: widget.color, size: 12),
-                        ],
-                      ),
-            ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 140),
+                style: style,
+                child:
+                    (widget.text == 'THERAPIES')
+                        ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(widget.text),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.north_east,
+                              color: widget.color,
+                              size: 12,
+                            ),
+                          ],
+                        )
+                        : Text(widget.text),
+              ),
 
-            const SizedBox(height: 6),
+              const SizedBox(height: 6),
 
-            // Animated underline
-            AnimatedBuilder(
-              animation: _scaleAnimation,
-              builder: (context, child) {
-                return Transform(
-                  alignment: Alignment.centerLeft,
-                  transform:
-                      Matrix4.identity()..scale(_scaleAnimation.value, 1.0),
-                  child: Container(
-                    width: _getTextWidth(),
-                    height: 1.0,
-                    decoration: BoxDecoration(color: onHoverButtonColor),
-                  ),
-                );
-              },
-            ),
-          ],
+              // ✅ underline animado estable
+              AnimatedBuilder(
+                animation: _lineAnim,
+                builder: (context, _) {
+                  return Transform(
+                    alignment: Alignment.centerLeft,
+                    transform: Matrix4.identity()..scale(_lineAnim.value, 1.0),
+                    child: Container(
+                      width: _stableTextWidth(),
+                      height: 1,
+                      color: underlineColor,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  double _getTextWidth() {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(
-        text: widget.text,
-        style: _isHovered ? _getHoveredTextStyle() : _getTextStyle(),
-      ),
-      maxLines: 1,
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    return textPainter.width;
   }
 }

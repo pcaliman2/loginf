@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:owa_flutter/discover_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
+import 'package:owa_flutter/useful/is_desktop_from_context.dart';
 import 'package:owa_flutter/useful/size_config.dart';
-import 'package:owa_flutter/widgets/discover_card_mobile.dart';
+import 'package:owa_flutter/widgets/discover_card_image_from_url.dart';
 import 'package:owa_flutter/widgets/fade_in_widget.dart';
 import 'package:owa_flutter/widgets/headline.dart';
+import 'package:owa_flutter/models/owa_specs.dart';
 
 class OWADiscoverSectionMobile extends StatefulWidget {
   const OWADiscoverSectionMobile({super.key});
@@ -16,69 +21,68 @@ class OWADiscoverSectionMobile extends StatefulWidget {
 class _OWADiscoverSectionMobileState extends State<OWADiscoverSectionMobile> {
   int currentIndex = 0;
 
-  final List<Map<String, dynamic>> cardData = [
-    {
-      'imagePath': 'assets/discover_1.jpg',
-      'title': 'WELLNESS CLUB',
-      'buttonText': 'BOOK A SESSION',
-      'description':
-          'Step into a space of rhythm and release. With private saunas, invigorating cold plunges, and serene lounge areas, OWA\'s Wellness Club is designed for mindful recovery, whether in solitude or shared with others.',
-      'onButtonTap': () {
-        // Handle book a session
-      },
-    },
-    {
-      'imagePath': 'assets/discover_2.jpg',
-      'title': 'SESEN ROOM X OWA',
-      'buttonText': 'LEARN MORE',
-      'description':
-          'SESEN Room x OWA brings Mexico City\'s most trusted name in supplements to Roma Norte. Featuring premium collagen-based formulations and a food offering that is both elevated and restorative, it\'s a destination for those who see nutrition as a cornerstone of wellbeing.',
-      'onButtonTap': () {
-        // Handle learn more
-      },
-    },
-    {
-      'imagePath': 'assets/discover_3.jpg',
-      'title': 'CASA OWA',
-      'buttonText': 'RESERVE YOUR STAY',
-      'description':
-          'A collection of nine elevated residences in Roma Norte—Mexico City\'s most vibrant neighborhood. CASA OWA blends the comfort of a private apartment with concierge service and the highest level of hospitality. With full access to the Wellness Club, every stay feels like an immersive OWA experience, far beyond a typical hotel stay.',
-      'onButtonTap': () {
-        // Handle reserve stay
-      },
-    },
-    {
-      'imagePath': 'assets/discover_4.jpg',
-      'title': 'COLLABORATIONS',
-      'buttonText': 'CONTACT US TO GET STARTED',
-      'description':
-          'OWA\'s rooftop is designed for curated happenings—wellness sessions, cultural gatherings, and intimate events that bring people together. Whether joining as a guest or creating alongside us as a partner, every experience here reflects the spirit of OWA: connection, creativity, and wellbeing.',
-      'onButtonTap': () {
-        // Handle contact us
-      },
-    },
-  ];
+  // Spec state
+  OWADiscoverSectionSpec? _spec;
+  bool _isLoading = true;
+  String? _error;
 
-  void _previousCard() {
+  // ==========================
+  // ===== LIFECYCLE =====
+  // ==========================
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSpec();
+  }
+
+  Future<void> _loadSpec() async {
+    try {
+      final spec = await OWADiscoverService.fetchSpec();
+      setState(() {
+        _spec = spec;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _previousCard(int length) {
     setState(() {
-      currentIndex = currentIndex > 0 ? currentIndex - 1 : cardData.length - 1;
+      currentIndex = currentIndex > 0 ? currentIndex - 1 : length - 1;
     });
   }
 
-  void _nextCard() {
+  void _nextCard(int length) {
     setState(() {
-      currentIndex = currentIndex < cardData.length - 1 ? currentIndex + 1 : 0;
+      currentIndex = currentIndex < length - 1 ? currentIndex + 1 : 0;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) return const SizedBox.shrink();
+    if (_error != null) return const SizedBox.shrink();
+
+    final cards = _spec!.data.discoverSections;
+    final pageDescription = _spec!.data.pageDescription;
+    final currentCard = cards[currentIndex];
+
+    final isDesktop = isDesktopFromContext(context);
+    final titleToSubtitleSpacing =
+        isDesktop ? SizeConfig.h(20) : SizeConfig.h(56);
+    final headerToContentSpacing =
+        isDesktop ? SizeConfig.h(80) : SizeConfig.h(144);
+
     return Container(
       width: double.infinity,
       color: colors.backgroundColor,
       padding: EdgeInsets.symmetric(
-        // horizontal: SizeConfig.w(42),
-        horizontal: 27,
+        horizontal: SizeConfig.w(20),
         vertical: SizeConfig.h(80),
       ),
       child: Column(
@@ -100,12 +104,12 @@ class _OWADiscoverSectionMobileState extends State<OWADiscoverSectionMobile> {
             ),
           ),
 
-          SizedBox(height: SizeConfig.h(20)),
+          SizedBox(height: titleToSubtitleSpacing),
 
           // Right side - Description
           Headline(
             child: Text(
-              'From our wellness club and café to our guest residences and creative collaborations, OWA brings together the essential dimensions of wellbeing under one vision.',
+              pageDescription,
               style: TextStyle(
                 fontFamily: 'Arbeit',
                 fontWeight: FontWeight.w300,
@@ -118,19 +122,27 @@ class _OWADiscoverSectionMobileState extends State<OWADiscoverSectionMobile> {
             ),
           ),
 
-          SizedBox(height: SizeConfig.h(80)),
+          SizedBox(height: headerToContentSpacing),
 
           // Single card container
           FadeInWidget(
-            child: SizedBox(
-              width: double.infinity,
-              child: DiscoverCardMobile(
-                imagePath: cardData[currentIndex]['imagePath'],
-                title: cardData[currentIndex]['title'],
-                buttonText: cardData[currentIndex]['buttonText'],
-                description: cardData[currentIndex]['description'],
-                onButtonTap: cardData[currentIndex]['onButtonTap'],
-              ),
+            child: DiscoverCard(
+              imagePath: currentCard.cardBackgroundImage.url,
+              title: currentCard.cardTitle,
+              buttonText: currentCard.cardLinkText,
+              description: currentCard.cardDescription,
+              onButtonTap: () async {
+                final url = currentCard.cardLinkUrl;
+                if (url.isNotEmpty) {
+                  final uri = Uri.parse(url);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                }
+              },
+              cardWidth: double.infinity,
+              borderRadius: 10,
+              useAnimatedRadius: false,
             ),
           ),
 
@@ -140,62 +152,72 @@ class _OWADiscoverSectionMobileState extends State<OWADiscoverSectionMobile> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Previous button
               GestureDetector(
-                onTap: _previousCard,
-                child: Container(
-                  // width: SizeConfig.w(40),
-                  // height: SizeConfig.w(40),
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF2C2C2C),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: Icon(
-                      Icons.arrow_back_ios,
-                      // size: SizeConfig.t(16),
-                      size: 16,
-                      color: const Color(0xFF2C2C2C),
-                    ),
-                  ),
-                ),
+                onTap: () => _previousCard(cards.length),
+                child: SvgPicture.asset('assets/icons/thin_arrow_left.svg'),
               ),
-
               SizedBox(width: 20),
-
-              // Next button
               GestureDetector(
-                onTap: _nextCard,
-                child: Container(
-                  // width: SizeConfig.w(40),
-                  // height: SizeConfig.w(40),
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF2C2C2C),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios,
-                    // size: SizeConfig.t(16),
-                    size: 16,
-                    color: const Color(0xFF2C2C2C),
-                  ),
-                ),
+                onTap: () => _nextCard(cards.length),
+                child: SvgPicture.asset('assets/icons/thin_arrow_right.svg'),
               ),
+
+              // // Previous button
+              // GestureDetector(
+              //   onTap: _previousCard,
+              //   child: Container(
+              //     // width: SizeConfig.w(40),
+              //     // height: SizeConfig.w(40),
+              //     width: 40,
+              //     height: 40,
+              //     decoration: BoxDecoration(
+              //       shape: BoxShape.circle,
+              //       border: Border.all(
+              //         color: const Color(0xFF2C2C2C),
+              //         width: 1.5,
+              //       ),
+              //     ),
+              //     child: Padding(
+              //       padding: const EdgeInsets.only(left: 4.0),
+              //       child: Icon(
+              //         Icons.arrow_back_ios,
+              //         // size: SizeConfig.t(16),
+              //         size: 16,
+              //         color: const Color(0xFF2C2C2C),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+
+              // SizedBox(width: 20),
+
+              // // Next button
+              // GestureDetector(
+              //   onTap: _nextCard,
+              //   child: Container(
+              //     // width: SizeConfig.w(40),
+              //     // height: SizeConfig.w(40),
+              //     width: 40,
+              //     height: 40,
+              //     decoration: BoxDecoration(
+              //       shape: BoxShape.circle,
+              //       border: Border.all(
+              //         color: const Color(0xFF2C2C2C),
+              //         width: 1.5,
+              //       ),
+              //     ),
+              //     child: Icon(
+              //       Icons.arrow_forward_ios,
+              //       // size: SizeConfig.t(16),
+              //       size: 16,
+              //       color: const Color(0xFF2C2C2C),
+              //     ),
+              //   ),
+              // ),
               Spacer(),
               // Page indicator
               Text(
-                '${(currentIndex + 1).toString().padLeft(2, '0')} / ${cardData.length.toString().padLeft(2, '0')}',
+                '${(currentIndex + 1).toString().padLeft(2, '0')} / ${cards.length.toString().padLeft(2, '0')}',
                 style: TextStyle(
                   fontFamily: 'Basier Square Mono',
                   fontWeight: FontWeight.w400,

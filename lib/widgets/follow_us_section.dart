@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:owa_flutter/useful/colors.dart' as colors;
-import 'package:owa_flutter/widgets/fade_in_widget.dart';
 import 'package:owa_flutter/widgets/go_to_qntmbody_instagram.dart';
 import 'package:owa_flutter/widgets/headline.dart';
 import 'package:owa_flutter/widgets/hover_image_widget.dart';
-import 'package:owa_flutter/useful/is_desktop_from_context.dart';
-import 'package:owa_flutter/useful/size_config.dart';
 
 class OWAFollowUsSection extends StatelessWidget {
   const OWAFollowUsSection({super.key});
@@ -20,17 +16,19 @@ class OWAFollowUsSection extends StatelessWidget {
             width: 387.46,
             height: 66,
             alignment: Alignment.center,
-            child: Text(
-              'We are on a mission to explore integrative wellbeing and\ncontinuously evolve our spaces as centers of restoration,\nconnection, and growth.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Arbeit',
-                fontWeight: FontWeight.w300,
-                fontStyle: FontStyle.normal,
-                fontSize: 15,
-                height: 22 / 15,
-                letterSpacing: 0,
-                color: Colors.black,
+            child: Headline(
+              child: Text(
+                'We are on a mission to explore integrative wellbeing and\ncontinuously evolve our spaces as centers of restoration,\nconnection, and growth.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Arbeit',
+                  fontWeight: FontWeight.w300,
+                  fontStyle: FontStyle.normal,
+                  fontSize: 15,
+                  height: 22 / 15,
+                  letterSpacing: 0,
+                  color: Colors.black,
+                ),
               ),
             ),
           ),

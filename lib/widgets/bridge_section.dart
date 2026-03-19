@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:owa_flutter/widgets/animated_hero_text.dart';
 import 'package:owa_flutter/useful/is_desktop_from_context.dart';
+import 'package:owa_flutter/widgets/animated_hero_text.dart';
+import 'package:owa_flutter/widgets/animated_hero_text_mobile.dart';
 
 class BridgeSection extends StatefulWidget {
   const BridgeSection({super.key});
@@ -87,7 +88,7 @@ class _BridgeSectionState extends State<BridgeSection>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height,
+      height: 530,
       width: MediaQuery.of(context).size.width,
       child: Stack(
         children: [
@@ -114,7 +115,7 @@ class _BridgeSectionState extends State<BridgeSection>
             child: Opacity(
               opacity: _heroOpacityAnimation.value,
               child: Container(
-                height: MediaQuery.of(context).size.height,
+                height: 530,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(
@@ -157,7 +158,7 @@ class _BridgeSectionState extends State<BridgeSection>
                 child:
                     isDesktopFromContext(context)
                         ? const AnimatedHeroText()
-                        : const MobileAnimatedHeroText(),
+                        : const AnimatedHeroTextMobile(),
               ),
             );
           },

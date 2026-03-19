@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:owa_flutter/widgets/owa_therapies_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:owa_flutter/useful/colors.dart' as colors;
+import 'package:owa_flutter/useful/is_desktop_from_context.dart';
 import 'package:owa_flutter/useful/size_config.dart';
-import 'package:owa_flutter/widgets/animated_menu_icon_stack.dart';
+import 'package:owa_flutter/useful/text_styles.dart';
+import 'package:owa_flutter/widgets/build_separator.dart';
 import 'package:owa_flutter/widgets/headline.dart';
-import 'package:owa_flutter/widgets/therapy_info.dart';
+import 'package:owa_flutter/models/owa_specs.dart';
 
 class OWATherapiesSectionMobile extends StatefulWidget {
   const OWATherapiesSectionMobile({super.key});
@@ -15,389 +19,283 @@ class OWATherapiesSectionMobile extends StatefulWidget {
 
 class _OWATherapiesSectionMobileState extends State<OWATherapiesSectionMobile>
     with TickerProviderStateMixin {
-  bool _isDiscoverScienceHovered = false;
   String? _expandedTherapy;
-  final Map<String, bool> _therapyButtonHoverStates = {
-    'SAUNA': false,
-    'COLD PLUNGE': false,
-    'HYPERBARIC CHAMBER': false,
-    'ZERO GRAVITY CHAIR': false,
-    'ACUPUNCTURE': false,
-    'PRESSOTHERAPY': false,
-    'MASSAGES': false,
-    'BIOMAGNETISM': false,
-  };
 
-  final Map<String, TherapyInfo> _therapyData = {
-    'SAUNA': TherapyInfo(
-      description:
-          'Step into deep heat to release, restore, and recharge. Our saunas support detoxification, relaxation, and the body\'s natural rhythm of renewal.',
-      benefits: [
-        'Promotes detoxification',
-        'Relieves stress',
-        'Improves cardiovascular health',
-        'Enhances skin vitality',
-        'Aids muscle recovery',
-      ],
-    ),
-    'COLD PLUNGE': TherapyInfo(
-      description:
-          'Awaken your system with the invigorating power of cold immersion. A timeless practice that sharpens focus, reduces inflammation, and leaves you renewed.',
-      benefits: [
-        'Boosts circulation',
-        'Reduces muscle soreness',
-        'Strengthens immune system',
-        'Increases mental clarity',
-        'Elevates mood',
-      ],
-    ),
-    'HYPERBARIC CHAMBER': TherapyInfo(
-      description:
-          'Breathe in pure oxygen at higher pressure to accelerate the body\'s healing process. Hyperbaric therapy supports cellular regeneration and overall vitality.',
-      benefits: [
-        'Accelerates recovery from fatigue or injury',
-        'Boosts oxygen delivery to tissues',
-        'Enhances brain function',
-        'Supports immune health',
-        'Promotes longevity',
-      ],
-    ),
-    'ZERO GRAVITY CHAIR': TherapyInfo(
-      description:
-          'Experience weightless relaxation that releases tension from the body. The zero gravity chair relieves pressure, improves circulation, and induces deep calm.',
-      benefits: [
-        'Reduces spinal pressure',
-        'Improves blood flow',
-        'Eases joint and muscle tension',
-        'Promotes relaxation',
-        'Supports restorative sleep',
-      ],
-    ),
-    'ACUPUNCTURE': TherapyInfo(
-      description:
-          'Experience weightless relaxation that releases tension from the body. The zero gravity chair relieves pressure, improves circulation, and induces deep calm.',
-      benefits: [
-        'Reduces spinal pressure',
-        'Improves blood flow',
-        'Eases joint and muscle tension',
-        'Promotes relaxation',
-        'Supports restorative sleep',
-      ],
-    ),
-    'PRESSOTHERAPY': TherapyInfo(
-      description:
-          'Experience weightless relaxation that releases tension from the body. The zero gravity chair relieves pressure, improves circulation, and induces deep calm.',
-      benefits: [
-        'Reduces spinal pressure',
-        'Improves blood flow',
-        'Eases joint and muscle tension',
-        'Promotes relaxation',
-        'Supports restorative sleep',
-      ],
-    ),
-    'MASSAGES': TherapyInfo(
-      description:
-          'Experience weightless relaxation that releases tension from the body. The zero gravity chair relieves pressure, improves circulation, and induces deep calm.',
-      benefits: [
-        'Reduces spinal pressure',
-        'Improves blood flow',
-        'Eases joint and muscle tension',
-        'Promotes relaxation',
-        'Supports restorative sleep',
-      ],
-    ),
-    'BIOMAGNETISM': TherapyInfo(
-      description:
-          'Experience weightless relaxation that releases tension from the body. The zero gravity chair relieves pressure, improves circulation, and induces deep calm.',
-      benefits: [
-        'Reduces spinal pressure',
-        'Improves blood flow',
-        'Eases joint and muscle tension',
-        'Promotes relaxation',
-        'Supports restorative sleep',
-      ],
-    ),
-  };
+  // Spec state
+  OWATherapiesSectionSpec? _spec;
+  bool _isLoading = true;
+  String? _error;
+
+  // Padding mobile (tu código ya usa 22)
+  double get _padX => SizeConfig.w(22);
+
+  // Imagen (ajústalo si tu Figma mobile pide otra altura)
+  double get _imageH => SizeConfig.h(240);
+  double get _imageRadius => 24;
+
+  // CTA
+  double get _ctaW => SizeConfig.w(257);
+  double get _ctaH => SizeConfig.h(43);
+
+  // ==========================
+  // ===== LIFECYCLE =====
+  // ==========================
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSpec();
+  }
+
+  Future<void> _loadSpec() async {
+    try {
+      final spec = await OWATherapiesService.fetchSpec();
+      setState(() {
+        _spec = spec;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) return const SizedBox.shrink();
+    if (_error != null) return const SizedBox.shrink();
+
+    final therapiesList = _spec!.data.therapiesList;
+    final bookButtonText = _spec!.data.bookButton.text;
+    final bookButtonUrl = _spec!.data.bookButton.url;
+    final pageDescription = _spec!.data.pageDescription;
+
+    // Map therapyName -> OWATherapyItem for quick lookup
+    final Map<String, OWATherapyItem> therapyMap = {
+      for (final t in therapiesList) t.therapyName: t,
+    };
+
+    final isDesktop = isDesktopFromContext(context);
+    final titleToDividerSpacing =
+        isDesktop ? SizeConfig.h(14) : SizeConfig.h(34);
+    final dividerToSubtitleSpacing =
+        isDesktop ? SizeConfig.h(24) : SizeConfig.h(52);
+    final headerToContentSpacing =
+        isDesktop ? SizeConfig.h(24) : SizeConfig.h(68);
+
     return Container(
       width: double.infinity,
       color: colors.backgroundColor,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildGreenSeparator(),
-            Headline(
-              child: Text(
-                'THERAPIES',
-                style: TextStyle(
-                  fontFamily: 'Basier Square Mono',
-                  fontWeight: FontWeight.w400,
-                  // fontSize: SizeConfig.t(19),
-                  fontSize: 19,
-                  height: 1.51,
-                  letterSpacing: 0.12 * SizeConfig.t(19),
-                  color: Colors.black,
-                ),
+      padding: EdgeInsets.symmetric(horizontal: _padX),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 2800 - 2684),
+
+          // ===== Title row: Therapies (izq) + 2.0 (der) =====
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Headline(
+                child: Text('Therapies', style: OWATextStyles.sectionTitle),
               ),
-            ),
-            SizedBox(height: 20),
+              const Spacer(),
+              Text('2.0', style: OWATextStyles.sectionTitleIndex),
+            ],
+          ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 52 - 22),
-              child: Headline(
-                child: Text(
-                  'OWA\'s therapies are designed as modern rituals of recovery—powerful practices that balance body and mind. From contrast therapy to advanced technologies, each session is an invitation to reset, restore, and realign.',
-                  style: TextStyle(
-                    fontFamily: 'Arbeit',
-                    fontWeight: FontWeight.w300,
-                    // fontSize: SizeConfig.t(15),
-                    fontSize: 15,
-                    height: 24 / 15,
-                    letterSpacing: 0,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-            _buildGreenSeparator(),
+          SizedBox(height: titleToDividerSpacing),
+          buildSeparator(),
 
-            _buildTherapyDropdown('SAUNA'),
-            _buildDivider(),
-            _buildTherapyDropdown('COLD PLUNGE'),
-            _buildDivider(),
-            _buildTherapyDropdown('HYPERBARIC CHAMBER'),
-            _buildDivider(),
-            _buildTherapyDropdown('ZERO GRAVITY CHAIR'),
-            _buildDivider(),
-            _buildTherapyDropdown('ACUPUNCTURE'),
-            _buildDivider(),
-            // _buildTherapyDropdown('PRESSOTHERAPY'),
-            // _buildDivider(),
-            _buildTherapyDropdown('MASSAGES'),
-            _buildDivider(),
-            // _buildTherapyDropdown('BIOMAGNETISM'),
-            // _buildYellowSeparator(),
-            _buildYellowSeparator(),
+          SizedBox(height: dividerToSubtitleSpacing),
 
-            // Mission Statement
-            Headline(
-              child: Text(
-                'We are on a mission to explore integrative wellbeing and continuously evolve our spaces as centers of restoration, connection, and growth',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Arbeit',
-                  fontWeight: FontWeight.w300,
-                  // fontSize: SizeConfig.t(15),
-                  fontSize: 15,
-                  height: 24 / 15,
-                  letterSpacing: 0,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
+          // ===== Description =====
+          SizedBox(
+            width: double.infinity,
+            child: Text(pageDescription, style: OWATextStyles.sectionSubtitle),
+          ),
 
-            // Discover the Science Button
-            Center(
-              child: MouseRegion(
-                onEnter:
-                    (_) => setState(() => _isDiscoverScienceHovered = true),
-                onExit:
-                    (_) => setState(() => _isDiscoverScienceHovered = false),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: SizeConfig.w(24),
-                    vertical: SizeConfig.h(12),
-                  ),
+          SizedBox(height: headerToContentSpacing),
+
+          // ===== List =====
+          for (final therapy in therapiesList) ...[
+            _buildTherapyRow(therapy),
+            buildSeparator(),
+          ],
+
+          SizedBox(height: SizeConfig.h(28)),
+
+          if (bookButtonUrl.isNotEmpty)
+            // ===== CTA bottom =====
+            Align(
+              alignment: Alignment.center,
+              child: GestureDetector(
+                onTap: () async {
+                  if (bookButtonUrl.isNotEmpty) {
+                    final uri = Uri.parse(bookButtonUrl);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  }
+                },
+                child: Container(
+                  width: _ctaW,
+                  height: _ctaH,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color:
-                        _isDiscoverScienceHovered
-                            ? colors.onHoverButtonColor
-                            : Colors.transparent,
+                    color: Colors.transparent,
                     border: Border.all(color: Colors.black, width: 1),
                   ),
                   child: Text(
-                    'DISCOVER THE SCIENCE',
+                    bookButtonText,
                     style: TextStyle(
                       fontFamily: 'Arbeit',
                       fontWeight: FontWeight.w400,
-                      // fontSize: SizeConfig.t(10),
-                      fontSize: 10,
+                      fontSize: SizeConfig.t(10),
                       height: 1.5,
-                      letterSpacing: 0,
                       color: Colors.black,
+                      decoration: TextDecoration.none,
                     ),
                   ),
                 ),
               ),
             ),
-            _buildYellowSeparator(),
-          ],
-        ),
+
+          SizedBox(height: SizeConfig.h(60)),
+        ],
       ),
     );
   }
 
-  SizedBox _buildGreenSeparator() => SizedBox(height: 115);
-  SizedBox _buildYellowSeparator() => SizedBox(height: 83);
-
-  Widget _buildBenefitItem(String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: EdgeInsets.only(top: SizeConfig.h(8), right: SizeConfig.w(8)),
-          width: SizeConfig.w(4),
-          height: SizeConfig.h(4),
-          decoration: const BoxDecoration(
-            color: Colors.black,
-            shape: BoxShape.circle,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontFamily: 'Arbeit',
-              fontWeight: FontWeight.w400,
-              // fontSize: SizeConfig.t(14),
-              fontSize: 14,
-              height: 1.5,
-              letterSpacing: 0,
-              color: Colors.black,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTherapyDropdown(String therapy) {
+  Widget _buildTherapyRow(OWATherapyItem item) {
+    final therapy = item.therapyName;
     final isExpanded = _expandedTherapy == therapy;
-    final therapyInfo = _therapyData[therapy]!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
+          hoverColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
           onTap: () {
             setState(() {
               _expandedTherapy = isExpanded ? null : therapy;
             });
           },
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: SizeConfig.h(16)),
+            padding: EdgeInsets.symmetric(vertical: SizeConfig.h(18)),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   therapy,
                   style: TextStyle(
                     fontFamily: 'Basier Square Mono',
                     fontWeight: FontWeight.w400,
-                    // fontSize: SizeConfig.t(15),
-                    fontSize: 15,
-                    height: 0.9,
-                    letterSpacing: 0.12 * SizeConfig.t(15),
+                    fontSize: SizeConfig.t(12),
+                    height: 1.2,
+                    letterSpacing: 0.12 * SizeConfig.t(12),
                     color: Colors.black,
+                    decoration: TextDecoration.none,
                   ),
                 ),
-                AnimatedMenuIconStack(isExpanded: isExpanded),
+                const Spacer(),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: Text(
+                    isExpanded ? '-' : '+',
+                    key: ValueKey(isExpanded),
+                    style: TextStyle(
+                      fontFamily: 'Basier Square Mono',
+                      fontWeight: FontWeight.w400,
+                      fontSize: SizeConfig.t(14),
+                      height: 1,
+                      color: Colors.black,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          height: isExpanded ? null : 0,
-          child: AnimatedOpacity(
-            opacity: isExpanded ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 300),
-            child:
-                isExpanded
-                    ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: SizeConfig.h(16)),
-                        Text(
-                          therapyInfo.description,
-                          style: TextStyle(
-                            fontFamily: 'Arbeit',
-                            fontWeight: FontWeight.w400,
-                            // fontSize: SizeConfig.t(15),
-                            fontSize: 15,
-                            height: 24 / 15,
-                            letterSpacing: 0,
-                            color: Colors.black,
-                          ),
-                        ),
-                        SizedBox(height: SizeConfig.h(36)),
 
-                        ...therapyInfo.benefits.map(
-                          (benefit) => Padding(
-                            padding: EdgeInsets.only(bottom: SizeConfig.h(8)),
-                            child: _buildBenefitItem(benefit),
-                          ),
-                        ),
-                        SizedBox(height: SizeConfig.h(36)),
+        ClipRect(
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints:
+                  isExpanded
+                      ? const BoxConstraints()
+                      : const BoxConstraints(maxHeight: 0),
+              child: Padding(
+                padding: EdgeInsets.only(bottom: SizeConfig.h(18)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.therapyDescription,
+                      style: TextStyle(
+                        fontFamily: 'Arbeit',
+                        fontWeight: FontWeight.w300,
+                        fontSize: SizeConfig.t(12),
+                        height: 18 / 12,
+                        color: Colors.black.withValues(alpha: 0.85),
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    SizedBox(height: SizeConfig.h(14)),
+                    _buildBenefitsTwoCols(item.benefits),
 
-                        // Book a Session Button for this therapy
-                        MouseRegion(
-                          onEnter:
-                              (_) => setState(
-                                () => _therapyButtonHoverStates[therapy] = true,
-                              ),
-                          onExit:
-                              (_) => setState(
-                                () =>
-                                    _therapyButtonHoverStates[therapy] = false,
-                              ),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: SizeConfig.w(24),
-                              vertical: SizeConfig.h(12),
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  _therapyButtonHoverStates[therapy]!
-                                      ? colors.onHoverButtonColor
-                                      : Colors.transparent,
-                              border: Border.all(color: Colors.black, width: 1),
-                            ),
-                            child: Text(
-                              'BOOK A SESSION',
-                              style: TextStyle(
-                                fontFamily: 'Arbeit',
-                                fontWeight: FontWeight.w400,
-                                // fontSize: SizeConfig.t(10),
-                                fontSize: 10,
-                                height: 1.5,
-                                letterSpacing: 0,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
+                    // ===== IMAGE FOR EACH THERAPY =====
+                    SizedBox(height: SizeConfig.h(14)),
+                    ClipRRect(
+                      // borderRadius: BorderRadius.circular(_imageRadius),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: _imageH,
+                        child: Image.network(
+                          item.therapyImage.url,
+                          fit: BoxFit.cover,
                         ),
-                        SizedBox(height: SizeConfig.h(24)),
-                      ],
-                    )
-                    : const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDivider() {
-    return Container(
-      height: 1,
-      color: Colors.black.withValues(alpha: 0.2),
-      margin: EdgeInsets.symmetric(vertical: SizeConfig.h(8)),
+  Widget _buildBenefitsTwoCols(List<String> benefits) {
+    final left = benefits.take(3).toList();
+    final right = benefits.skip(3).take(2).toList();
+
+    final style = TextStyle(
+      fontFamily: 'Arbeit',
+      fontWeight: FontWeight.w400,
+      fontSize: SizeConfig.t(10),
+      height: 14 / 10,
+      color: Colors.black.withValues(alpha: 0.90),
+      decoration: TextDecoration.none,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(left.join('\n'), style: style),
+        Text(right.join('\n'), style: style),
+      ],
     );
   }
 }
